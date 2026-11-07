@@ -10,7 +10,7 @@ def make(P, n_ops, mode="query", rng=random):
     for _ in range(n_ops):
         i = rng.randrange(P)
         op = rng.choice("+-*")
-        d = rng.randrange(10 if op != "*" else 1, 10 if op != "*" else 5) if op != "*" else rng.randrange(1, 5)
+        d = rng.randrange(1, 5) if op == "*" else rng.randrange(1, 10)
         val[i] = (val[i] + d) % 10 if op == "+" else (val[i] - d) % 10 if op == "-" else (val[i] * d) % 10
         toks.append(f"{NAMES[i]}{op}{d}")
     if mode == "query":
