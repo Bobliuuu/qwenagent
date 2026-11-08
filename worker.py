@@ -4,6 +4,7 @@ Modes (all share the same plumbing so ablations isolate ONE factor):
   oracle   : like multi but router replaced by ground-truth register id (upper bound for separation)
   uniform  : like multi but every token updates every slot equally (private states, NO routing)
   single   : ONE persistent state (width matched to multi's param count via --match_params)
+  multi_rr : multi + routed READ (return weighted by token-conditioned attention over slots)
   adapter  : stateless per-token MLP (no persistence at all)
 Slots share weights; slot identity = random per-sequence vector, so K can be raised at test time.
 Return = sum_k phi(LN(s_k)) added to the residual BEFORE the remaining layers."""
@@ -27,6 +28,8 @@ class Workers(nn.Module):
             w = single_width or ds
             s.ad = nn.Sequential(nn.Linear(d_model, 4 * w), nn.GELU(), nn.Linear(4 * w, d_model))
             nn.init.zeros_(s.ad[2].weight); nn.init.zeros_(s.ad[2].bias)
+        if mode == "multi_rr":   # routed READ: return weights over slots from the current token (own query/key)
+            s.q2 = nn.Linear(d_model, d_k); s.k2 = nn.Linear(ds, d_k)
         s.ablate = None      # None|'zero'|'shuffle'|'drop:<k>'
         s.reg = None         # [B,T] long ground-truth register ids (-1 none), set by caller, used by oracle
         s.stats = None
@@ -59,7 +62,11 @@ class Workers(nn.Module):
             g = g.clamp(max=1.0)
             new = s.cell(x[:, t, None].expand(B, K, ds).reshape(B * K, ds), st.reshape(B * K, ds)).view(B, K, ds)
             st = (1 - g) * st + g * new
-            outs.append(s.phi(s.ln(st)).sum(1)); assigns.append(a.detach())
+            pk = s.phi(s.ln(st))                                     # [B,K,D]
+            if s.mode == "multi_rr" and K > 1:
+                rl = (s.k2(st) * s.q2(hf[:, t])[:, None]).sum(-1) / 8.0
+                pk = pk * F.softmax(rl, dim=-1).unsqueeze(-1) * K     # routed read (scaled to keep magnitude)
+            outs.append(pk.sum(1)); assigns.append(a.detach())
         d = torch.stack(outs, 1) * mask[..., None]
         s.stats = torch.stack(assigns, 1)
         if s.ablate == "zero": d = d * 0

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13">
+<title>Workers injected into a frozen Qwen3-0.6B forward pass</title>
+<style>
+.m{font-size:11.5px} .b{font-weight:600} .fz,.rt,.tk{stroke-width:1.5} .tr{stroke-width:2} .rt{stroke-width:2} .ar{stroke-width:1.6;fill:none} .rg{stroke-width:2.4;fill:none} .tg{stroke-width:2;fill:none} .tr[fill-opacity]{stroke-width:2}
+.bg{fill:#ffffff} text{fill:#1c1c28} .m{fill:#5a5a6b} .fz{fill:#e8eaf0;stroke:#9aa0b4} .tr{fill:#dcebff;stroke:#1f7ae0} .rt{fill:#d9f2e4;stroke:#1a9a5a} .tk{fill:#fff1d6;stroke:#d98c1f} .ar{stroke:#1c1c28} .rg{stroke:#1a9a5a} .tg{stroke:#1f7ae0} .hd{fill:#1c1c28} .gt{fill:#1a9a5a}
+@media (prefers-color-scheme:dark){.bg{fill:#14141c} text{fill:#ececf4} .m{fill:#a8a8bc} .fz{fill:#2a2c38;stroke:#6a6f86} .tr{fill:#17304f;stroke:#5aa2ff} .rt{fill:#14382a;stroke:#4fd08a} .tk{fill:#3d2f14;stroke:#f0a640} .ar{stroke:#ececf4} .rg{stroke:#4fd08a} .tg{stroke:#5aa2ff} .hd{fill:#ececf4} .gt{fill:#4fd08a}}
+</style>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="hd"/></marker>
+  <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a9a5a"/></marker>
+  <marker id="u" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f7ae0"/></marker>
+</defs>
+<rect class="bg" width="900" height="470"/>
+<text x="450" y="26" text-anchor="middle" class="b" font-size="16">Subagents inside the forward pass (Qwen3-0.6B stays frozen)</text>
+
+<!-- main stack -->
+<rect class="tk" x="20" y="200" width="100" height="70" rx="8"/><text x="70" y="228" text-anchor="middle" class="b">tokens</text><text x="70" y="247" text-anchor="middle" class="m">a=3 b=7 a+4</text><text x="70" y="262" text-anchor="middle" class="m">b*2 ... a+b?</text>
+<rect class="fz" x="150" y="200" width="150" height="70" rx="8"/><text x="225" y="228" text-anchor="middle" class="b">frozen layers 0-11</text><text x="225" y="247" text-anchor="middle" class="m">embeddings + 12 blocks</text>
+<rect class="fz" x="640" y="200" width="150" height="70" rx="8"/><text x="715" y="228" text-anchor="middle" class="b">frozen layers 13-27</text><text x="715" y="247" text-anchor="middle" class="m">see the returned state</text>
+<rect class="tk" x="810" y="200" width="75" height="70" rx="8"/><text x="847" y="228" text-anchor="middle" class="b">digit</text><text x="847" y="247" text-anchor="middle" class="m">logits 0-9</text>
+<path class="ar" d="M120,235 H150" marker-end="url(#a)"/><path class="ar" d="M790,235 H810" marker-end="url(#a)"/>
+
+<!-- residual at layer 12 -->
+<path class="ar" d="M300,235 H640" marker-end="url(#a)"/>
+<text x="470" y="225" text-anchor="middle" class="m">residual stream h (layer 12 output)</text>
+<circle cx="600" cy="235" r="13" class="fz"/><text x="600" y="240" text-anchor="middle" class="b" font-size="16">+</text>
+
+<!-- worker block -->
+<rect x="320" y="70" width="290" height="100" rx="12" class="tr" fill-opacity=".35"/>
+<text x="465" y="62" text-anchor="middle" class="b">trainable workers (only these are trained)</text>
+
+<rect class="tr" x="335" y="86" width="85" height="68" rx="8"/><text x="377" y="108" text-anchor="middle" class="b">router</text><text x="377" y="125" text-anchor="middle" class="m">token query vs</text><text x="377" y="139" text-anchor="middle" class="m">slot keys: softmax</text>
+<rect class="tr" x="440" y="86" width="85" height="68" rx="8"/><text x="482" y="108" text-anchor="middle" class="b">K slots</text><text x="482" y="125" text-anchor="middle" class="m">private GRU</text><text x="482" y="139" text-anchor="middle" class="m">states (persist)</text>
+<rect class="rt" x="540" y="86" width="60" height="68" rx="8"/><text x="570" y="112" text-anchor="middle" class="b">return</text><text x="570" y="129" text-anchor="middle" class="m">MLP, sum</text><text x="570" y="142" text-anchor="middle" class="m">over slots</text>
+<path class="tg" d="M420,120 H440" marker-end="url(#u)"/><path class="tg" d="M525,120 H540" marker-end="url(#u)"/>
+<!-- inject -->
+<path class="tg" d="M340,235 V170 M340,170 V154" marker-end="url(#u)"/>
+<text x="332" y="190" text-anchor="end" class="m">inject at layer 12</text>
+<!-- return -->
+<path class="rg" d="M600,154 V222" marker-end="url(#g)"/>
+<text x="612" y="190" class="m gt">added to residual</text>
+<!-- state loop -->
+<path class="tg" d="M482,86 C482,74 510,74 510,86" />
+<text x="465" y="190" text-anchor="middle" class="m">state carried token to token (recurrent)</text>
+
+<!-- slot detail -->
+<text x="20" y="330" class="b">Slot identity is a random per-sequence vector, so K can be raised at test time.</text>
+<g>
+ <rect class="tr" x="20" y="345" width="82" height="48" rx="8"/><text x="61" y="366" text-anchor="middle" class="b">slot 0</text><text x="61" y="383" text-anchor="middle" class="m">owns a?</text>
+ <rect class="tr" x="112" y="345" width="82" height="48" rx="8"/><text x="153" y="366" text-anchor="middle" class="b">slot 1</text><text x="153" y="383" text-anchor="middle" class="m">owns b?</text>
+ <rect class="tr" x="204" y="345" width="82" height="48" rx="8"/><text x="245" y="366" text-anchor="middle" class="b">slot 2</text><text x="245" y="383" text-anchor="middle" class="m">owns c?</text>
+ <text x="320" y="375" text-anchor="middle" class="b" font-size="20">...</text>
+ <rect class="tr" x="350" y="345" width="82" height="48" rx="8"/><text x="391" y="366" text-anchor="middle" class="b">slot K-1</text><text x="391" y="383" text-anchor="middle" class="m">owns p?</text>
+</g>
+<text x="460" y="366" class="m">Learned binding, not given: the router decides which</text>
+<text x="460" y="383" class="m">slot absorbs each register's ops. Same weights for every slot.</text>
+
+<!-- legend -->
+<rect class="fz" x="20" y="425" width="18" height="14" rx="3"/><text x="46" y="437" class="m">frozen Qwen (no gradients)</text>
+<rect class="tr" x="230" y="425" width="18" height="14" rx="3"/><text x="256" y="437" class="m">trainable worker parts</text>
+<rect class="rt" x="420" y="425" width="18" height="14" rx="3"/><text x="446" y="437" class="m">return channel (before remaining layers)</text>
+<text x="880" y="437" text-anchor="end" class="m">no prompts, no tool calls, no external scheduler</text>
+</svg>

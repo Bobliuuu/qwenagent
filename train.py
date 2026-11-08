@@ -4,7 +4,7 @@ import worker as wk
 import task
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--mode", default="multi")          # multi|oracle|uniform|single|adapter|none
+ap.add_argument("--mode", default="multi")          # multi|multi_rr|oracle|uniform|single|adapter|none
 ap.add_argument("--model", default="Qwen/Qwen3-0.6B")
 ap.add_argument("--layer", type=int, default=12)
 ap.add_argument("--K", type=int, default=8); ap.add_argument("--d_s", type=int, default=64)
@@ -53,8 +53,8 @@ def reg_tensor(enc, spans):
 def run(xs, spans=None, Kmin=1):
     enc = tok(xs, return_tensors="pt", padding=True, return_offsets_mapping=True)
     if W:
-        W.reg = reg_tensor(enc, spans).to(dev) if (spans is not None and a.mode == "oracle") else None
-        if W.mode in ("multi", "oracle", "uniform"): W.K_eff = max(a.K, Kmin)
+        W.reg = reg_tensor(enc, spans).to(dev) if spans is not None else None
+        if W.mode in ("multi", "oracle", "uniform", "multi_rr"): W.K_eff = max(a.K, Kmin)
         cur["mask"] = enc.attention_mask.float().to(dev)
     enc = {k: v.to(dev) for k, v in enc.items() if k != "offset_mapping"}
     return lm(**enc).logits[:, -1, :][:, digit_ids].float()
@@ -72,6 +72,18 @@ def evaluate(P, n, opr_, ablate=None):
     if W: W.ablate = None
     return c / n
 
+@torch.no_grad()
+def purity(P, n=50):
+    """router purity: per sequence, for each true register, share of its tokens sent to its majority slot"""
+    if not W or W.mode in ("single", "adapter"): return None
+    rng = random.Random(99 + P); xs, ys, sp = task.batch(n, [P], opr, a.task, rng); run(xs, sp, Kmin=P)
+    reg = W.reg.cpu(); asg = W.stats.argmax(-1).cpu(); sc = []
+    for b in range(n):
+        for r in range(P):
+            m = (reg[b] == r)
+            if m.sum() >= 2: sc.append(torch.bincount(asg[b][m], minlength=W.K_eff).max().item() / m.sum().item())
+    return sum(sc) / max(len(sc), 1)
+
 res = {"args": vars(a), "params": NP, "log": []}
 if W:
     opt = torch.optim.AdamW(W.parameters(), lr=a.lr, weight_decay=0.01); t0 = time.time()
@@ -88,6 +100,7 @@ if W:
 final = {}
 for P in teP:
     final[f"P{P}"] = evaluate(P, a.n_eval, opr)
+final["purity_P4"] = purity(4); final["purity_P8"] = purity(8)
 final["P4_long"] = evaluate(4, a.n_eval, (opr[1] + 3, opr[1] + 8))
 if W and a.mode not in ("adapter",):
     for ab in ["zero", "shuffle", "drop:0"]:
