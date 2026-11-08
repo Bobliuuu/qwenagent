@@ -16,6 +16,7 @@ ap.add_argument("--train_P", default="2,3,4"); ap.add_argument("--test_P", defau
 ap.add_argument("--opr", default="2,4", help="ops per register range")
 ap.add_argument("--steps", type=int, default=4000); ap.add_argument("--bs", type=int, default=32)
 ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--seed", type=int, default=0)
+ap.add_argument("--rename", type=int, default=0, help="random register letters + shuffled init order in training and eval")
 ap.add_argument("--n_eval", type=int, default=200)
 ap.add_argument("--out", default="results/run.json"); ap.add_argument("--save", default="")
 ap.add_argument("--init", default="", help="warm-start worker weights from a ckpt (stage-2 fine-tune)")
@@ -63,6 +64,7 @@ def run(xs, spans=None, Kmin=1):
     enc = {k: v.to(dev) for k, v in enc.items() if k != "offset_mapping"}
     return lm(**enc).logits[:, -1, :][:, digit_ids].float()
 
+KW = dict(rename=True, shuffle_init=True) if a.rename else {}
 opr = tuple(map(int, a.opr.split(","))); trP = [int(x) for x in a.train_P.split(",")]
 teP = [int(x) for x in a.test_P.split(",")]
 
@@ -71,7 +73,7 @@ def evaluate(P, n, opr_, ablate=None, tname=None):
     if W: W.ablate = ablate
     rng = random.Random(4321 + P); c = 0; bs = 25
     for i in range(0, n, bs):
-        xs, ys, sp = task.batch(bs, [P], opr_, tname or a.task, rng)
+        xs, ys, sp = task.batch(bs, [P], opr_, tname or a.task, rng, **KW)
         c += (run(xs, sp, Kmin=P).argmax(-1).cpu() == torch.tensor(ys)).sum().item()
     if W: W.ablate = None
     return c / n
@@ -80,7 +82,7 @@ def evaluate(P, n, opr_, ablate=None, tname=None):
 def purity(P, n=50):
     """router purity: per sequence, for each true register, share of its tokens sent to its majority slot"""
     if not W or W.mode in ("single", "adapter"): return None
-    rng = random.Random(99 + P); xs, ys, sp = task.batch(n, [P], opr, a.task, rng); run(xs, sp, Kmin=P)
+    rng = random.Random(99 + P); xs, ys, sp = task.batch(n, [P], opr, a.task, rng, **KW); run(xs, sp, Kmin=P)
     reg = W.reg.cpu(); asg = W.stats.argmax(-1).cpu(); sc = []
     for b in range(n):
         for r in range(P):
@@ -94,7 +96,7 @@ if W:
     phases = [(p.split(":")[0], int(p.split(":")[1])) for p in a.curriculum.split(",")] if a.curriculum else [(a.task, a.steps)]
     sched = [n for n, c in phases for _ in range(c)]; a.task = phases[-1][0]
     for step in range(1, len(sched) + 1):
-        xs, ys, sp = task.batch(a.bs, trP, opr, sched[step - 1])
+        xs, ys, sp = task.batch(a.bs, trP, opr, sched[step - 1], **KW)
         loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
         opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(W.parameters(), 1.0); opt.step()
         if step % 200 == 0:
