@@ -17,6 +17,7 @@ ap.add_argument("--steps", type=int, default=4000); ap.add_argument("--bs", type
 ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--n_eval", type=int, default=200)
 ap.add_argument("--out", default="results/run.json"); ap.add_argument("--save", default="")
+ap.add_argument("--init", default="", help="warm-start worker weights from a ckpt (stage-2 fine-tune)")
 ap.add_argument("--trace", default=""); ap.add_argument("--device", default="cuda")
 a = ap.parse_args()
 random.seed(a.seed); torch.manual_seed(a.seed)
@@ -38,6 +39,7 @@ if a.mode != "none":
         d = W(h, cur["mask"]).to(h.dtype)
         return (h + d,) + tuple(out[1:]) if isinstance(out, tuple) else h + d
     lm.model.layers[a.layer].register_forward_hook(hook)
+if W and a.init: W.load_state_dict(torch.load(a.init, map_location=dev)["state"]); print("warm start", a.init, flush=True)
 NP = wk.nparams(W) if W else 0
 print("mode", a.mode, "trainable params", NP, flush=True)
 
@@ -48,7 +50,7 @@ def reg_tensor(enc, spans):
         for t, (c0, c1) in enumerate(enc.offset_mapping[b].tolist()):
             if c1 > c0:
                 for (s0, s1, r) in spans[b]:
-                    if s0 <= c0 < s1: out[b, t] = r; break
+                    if c0 < s1 and c1 > s0: out[b, t] = r; break   # overlap (token ' b' starts at the leading space)
     return out
 
 def run(xs, spans=None, Kmin=1):
