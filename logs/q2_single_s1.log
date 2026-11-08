@@ -1,0 +1,26 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 4086.59it/s]
+trainable params 2053505
+[W1108 02:14:49.673981730 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 419430400 bytes (free: 163446784, total: 42405855232).
+[W1108 02:14:49.674172094 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 419430400 bytes (free: 163446784, total: 42405855232).
+Traceback (most recent call last):
+  File "/home/ubuntu/qwenagent/train.py", line 59, in <module>
+    loss = F.cross_entropy(logits_for(xs), torch.tensor(ys, device=dev))
+  File "/home/ubuntu/qwenagent/train.py", line 38, in logits_for
+    lg = lm(**enc).logits[:, -1, :]
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/transformers/utils/generic.py", line 939, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 495, in forward
+    logits = self.lm_head(hidden_states[:, slice_indices, :])
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ubuntu/venv-baseline/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 400.00 MiB. GPU 0 has a total capacity of 39.49 GiB of which 155.88 MiB is free. Process 1529167 has 876.00 MiB memory in use. Process 2522705 has 4.38 GiB memory in use. Process 2522703 has 4.38 GiB memory in use. Process 2522708 has 4.38 GiB memory in use. Process 2522711 has 4.38 GiB memory in use. Process 2522704 has 9.17 GiB memory in use. Process 2522709 has 4.38 GiB memory in use. Process 2522702 has 4.38 GiB memory in use. Including non-PyTorch memory, this process has 3.01 GiB memory in use. Of the allocated memory 2.39 GiB is allocated by PyTorch, and 128.64 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
