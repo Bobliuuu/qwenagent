@@ -11,9 +11,10 @@ Return = sum_k phi(LN(s_k)) added to the residual BEFORE the remaining layers.""
 import torch, torch.nn as nn, torch.nn.functional as F
 
 class Workers(nn.Module):
-    def __init__(s, d_model, K=8, d_s=64, mode="multi", d_k=64, single_width=None, occ_gate=True):
+    def __init__(s, d_model, K=8, d_s=64, mode="multi", d_k=64, single_width=None, occ_gate=True, ret_norm=False):
         super().__init__()
-        s.mode, s.K, s.d_s, s.occ_gate = mode, K, d_s, occ_gate
+        s.mode, s.K, s.d_s, s.occ_gate, s.ret_norm = mode, K, d_s, occ_gate, ret_norm
+        s.ret_scale = 1.0
         if mode == "single": s.K_eff, s.ds_eff = 1, (single_width or d_s * K)
         else: s.K_eff, s.ds_eff = K, d_s
         ds = s.ds_eff
@@ -69,8 +70,12 @@ class Workers(nn.Module):
             if s.mode == "multi_rr" and K > 1:
                 rl = (s.k2(st) * s.q2(hf[:, t])[:, None]).sum(-1) / 8.0
                 pk = pk * F.softmax(rl, dim=-1).unsqueeze(-1) * K     # routed read (scaled to keep magnitude)
-            outs.append(pk.sum(1)); assigns.append(a.detach())
-        d = torch.stack(outs, 1) * mask[..., None]
+            if s.ret_norm and K > 1:                                 # mean over occupied slots: return magnitude no longer grows with #active registers
+                outs.append(pk.sum(1) / occ.sum(1, keepdim=True).clamp(min=1.0))
+            else:
+                outs.append(pk.sum(1))
+            assigns.append(a.detach())
+        d = torch.stack(outs, 1) * mask[..., None] * s.ret_scale
         s.stats = torch.stack(assigns, 1)
         if s.ablate == "zero": d = d * 0
         if s.ablate == "shuffle": d = d.roll(1, 0)
