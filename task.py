@@ -1,27 +1,40 @@
-"""Interleaved register programs. P registers, each with its own op stream, interleaved.
-Ops mod 10. Query 'query': value of one register. Query 'sum': sum of all finals mod 10."""
+"""Interleaved register programs (mod 10). P registers (letters a..p), each with its own op stream, interleaved.
+Modes: 'query' value of one register | 'sum' sum of all finals | 'subset' sum of 3 queried registers.
+make() also returns word-level register ids (for oracle routing / visualization)."""
 import random
-NAMES = "abcdefgh"
+NAMES = "abcdefghijklmnop"
 
 def make(P, n_ops, mode="query", rng=random):
     init = [rng.randrange(10) for _ in range(P)]
     val = init[:]
-    toks = [f"{NAMES[i]}={init[i]}" for i in range(P)]
+    words = [(f"{NAMES[i]}={init[i]}", i) for i in range(P)]
     for _ in range(n_ops):
-        i = rng.randrange(P)
-        op = rng.choice("+-*")
+        i = rng.randrange(P); op = rng.choice("+-*")
         d = rng.randrange(1, 5) if op == "*" else rng.randrange(1, 10)
         val[i] = (val[i] + d) % 10 if op == "+" else (val[i] - d) % 10 if op == "-" else (val[i] * d) % 10
-        toks.append(f"{NAMES[i]}{op}{d}")
+        words.append((f"{NAMES[i]}{op}{d}", i))
+    words.append(("|", -1))
     if mode == "query":
-        q = rng.randrange(P); ans = val[q]; qs = f"{NAMES[q]}?"
+        q = rng.randrange(P); ans = val[q]; words.append((f"{NAMES[q]}?", -1))
+    elif mode == "subset":
+        k = min(3, P); qs = rng.sample(range(P), k); ans = sum(val[i] for i in qs) % 10
+        words.append(("+".join(NAMES[i] for i in qs) + "?", -1))
     else:
-        ans = sum(val) % 10; qs = "sum?"
-    return " ".join(toks) + " | " + qs + " =", ans
+        ans = sum(val) % 10; words.append(("sum?", -1))
+    words.append(("=", -1))
+    return words, ans
 
-def batch(B, Ps, nops, mode, rng=random):
-    xs, ys = [], []
+def render(words):
+    text, regs, pos = "", [], 0
+    spans = []
+    for w, r in words:
+        if text: text += " "
+        spans.append((len(text), len(text) + len(w), r)); text += w
+    return text, spans
+
+def batch(B, Ps, nops_per_reg, mode, rng=random):
+    xs, ys, sp = [], [], []
     for _ in range(B):
-        P = rng.choice(Ps); n = rng.randrange(nops[0], nops[1] + 1)
-        x, y = make(P, n, mode, rng); xs.append(x); ys.append(y)
-    return xs, ys
+        P = rng.choice(Ps); n = P * rng.randrange(nops_per_reg[0], nops_per_reg[1] + 1)
+        words, y = make(P, n, mode, rng); t, s = render(words); xs.append(t); ys.append(y); sp.append(s)
+    return xs, ys, sp
