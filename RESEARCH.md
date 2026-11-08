@@ -3,6 +3,32 @@
 Date: 2026-11-07. Scope: read-only review of `worker.py`, `train.py`, `task.py`, `results/q1_*`, `results/q2_*`, plus a web sweep.
 Verification status: links marked (V) had the abstract/summary confirmed through search results this session; (U) = cited from memory or only secondhand, check before citing in anything public.
 
+## Results so far (updated 2026-11-08)
+
+All numbers live in `results/*.json` and the generated tables in `results/TABLE.md`; this section is qualitative on purpose. Sections 0-6 below are the earlier prior-art and planning analysis and predate q3-q7.
+
+| run | what changed | outcome |
+|---|---|---|
+| q2 | task `query`, K=4, 3 seeds, no occupancy gating, modes adapter/single/multi | all learn above chance; persistent-state modes decay more slowly at 5-6 registers than the adapter, but single and multi are not separable and single beats multi in some seeds |
+| q3 | task `subset` (sum of three queried registers), K=8, from scratch | never left chance; results not kept |
+| q4 | curriculum `query` -> `subset` | stayed at chance even for the adapter; task abandoned |
+| q5 | task `query`, K=8, all rungs, 2 seeds, no occupancy gating | adapter and single learn; slot modes (uniform, multi, multi_rr) under-train near chance; oracle partly learns |
+| q6 | occupancy-gated returns, K=4, 8000 steps, all rungs incl. multi_rr, 2 seeds | headline: slot modes learn in at least one seed; frozen Qwen ~chance -> workers well above chance at 2-3 registers; zeroing the return -> chance; no mode beats adapter/single at extrapolating; all near chance by 8-12 registers; seed variance large for multi and multi_rr |
+| q6 probes | `eval_ckpt.py` on seed-0 checkpoints | every learned mode collapses when register names are randomised, oracle routing mostly survives; multi is insensitive to the slot count K at test (does not use its slots), oracle needs them; all modes collapse with more ops per register |
+| q7 | random register names in train and eval (`--rename 1`) | running at the time of writing; see `results/q7_*.json` and the README q7 section once present |
+
+### The binding finding
+
+The control the earlier analysis asked for (section 4, item 3: renamed registers) was run on the q6 checkpoints. It suggests the fixed-letter task lets every learned module memorise "letter -> behaviour", so q2-q6 never tested whether slots can bind a register *name* to a *state*. The oracle router never reads names, which is why it survives renaming. Caveat: one seed and one checkpoint per mode, no error bars.
+
+### What would make a novel claim
+
+The mechanism itself is RIMs / EntNet / Slot Attention in a frozen-LLM host, so the claim has to be empirical. The strongest honest claim available is:
+
+> A frozen pretrained LM can host trainable recurrent slot modules whose router learns **content-based binding** of entities to private states (random names, no positional or letter shortcut), and this extrapolates to more entities than seen in training in a way a single shared state of equal size, and a stateless adapter, cannot match.
+
+That needs q7-style runs (random names) in which `multi` or `multi_rr` beats `single` and `adapter` at P beyond the trained sizes with non-overlapping intervals over more than two seeds, router purity staying high, and accuracy sensitive to K at test time (the K probe above is the check that the slots are really used). If q7 shows all learned modes at chance with random names, the defensible report is the negative one (C5): embedding works, binding is not learned at this scale, and the oracle shows what correct routing would buy.
+
 ## 0. What the code and data actually say
 
 Mechanism: at layer 12 of frozen Qwen3-0.6B a forward hook adds `sum_k phi(LN(s_k))` to the residual. Each slot is a GRU state, written token by token with a gate `a_k * wg(h_t)`, where `a` = softmax(3 * q(h_t) . k(s_k)) (content-addressed, Slot-Attention-like but one-step and with no iterations). Slots share weights, slot identity is only the random initial state `randn*0.5`, and K can be raised at test time (`Kmin=P`).
