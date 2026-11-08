@@ -145,6 +145,10 @@ What the data say (generated):
 
 ![Router purity vs ground-truth register ids](figures/q6_router_purity.png)
 
+**q7: learned binding (random register names)**
+
+![q7 accuracy vs registers](figures/q7_accuracy_vs_registers.png)
+
 <!-- FIGS:END -->
 
 ## Probes: the binding bottleneck
@@ -196,7 +200,35 @@ How to read it:
 ## q7: learned binding
 
 <!-- Q7:BEGIN (generated) -->
-> **q7 in progress.** q7 trains the same six rungs with register names randomised in both training and evaluation, so a model can only succeed by learning content-based binding (name -> state). No q7 result files exist in `results/` yet. This note is removed automatically by `viz/make_tables.py` when `results/q7_*.json` appear.
+**q7: learned binding** (task `query`, random register names in train and eval). _Partial: 10 finished runs over 5 modes so far; rows with fewer seeds have wide uncertainty._
+
+**q7 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
+
+| mode | n seeds | trainable params | P=2 | P=3 | P=4 | P=6 | P=8 | P=12 | P=16 |
+|---|---|---|---|---|---|---|---|---|---|
+| adapter | 2 | 507,873 | 59.5 ± 1.0 | 59.2 ± 0.3 | 51.5 ± 2.0 | 48.5 ± 1.0 | 40.8 ± 0.2 | 36.0 ± 2.5 | 26.5 ± 1.0 |
+| single | 2 | 441,281 | 59.5 ± 1.5 | 56.5 ± 2.0 | 54.2 ± 1.3 | 44.2 ± 1.8 | 38.7 ± 2.2 | 33.5 ± 5.5 | 23.2 ± 1.8 |
+| uniform | 2 | 441,281 | 58.2 ± 1.3 | 56.0 ± 0.5 | 51.8 ± 2.8 | 26.0 ± 2.0 | 12.2 ± 0.3 | 10.8 ± 0.3 | 10.8 ± 0.8 |
+| multi | 2 | 441,281 | 58.0 ± 4.5 | 53.8 ± 2.7 | 54.8 ± 1.3 | 42.2 ± 1.3 | 39.5 ± 1.5 | 38.8 ± 5.2 | 30.2 ± 3.8 |
+| oracle | 2 | 441,281 | 51.5 ± 3.5 | 49.0 ± 0.5 | 40.5 ± 1.0 | 18.2 ± 8.8 | 13.8 ± 0.3 | 12.0 ± 1.0 | 11.5 ± 1.0 |
+
+Intervention ablations at P4 (accuracy %, mean ± std; `P4_long` = more ops per register):
+
+| mode | intact | zero return | shuffle across batch | drop slot 0 | more ops / register |
+|---|---|---|---|---|---|
+| adapter | 51.5 ± 2.0 | 13.0 ± 0.0 | 10.0 ± 1.5 | n/a | 12.8 ± 0.3 |
+| single | 54.2 ± 1.3 | 13.0 ± 0.0 | 12.5 ± 0.5 | 13.0 ± 0.0 | 10.5 ± 0.5 |
+| uniform | 51.8 ± 2.8 | 13.0 ± 0.0 | 12.8 ± 2.2 | 53.0 ± 0.5 | 13.2 ± 1.2 |
+| multi | 54.8 ± 1.3 | 13.0 ± 0.0 | 18.2 ± 1.8 | 51.2 ± 2.3 | 7.3 ± 0.8 |
+| oracle | 40.5 ± 1.0 | 13.0 ± 0.0 | 14.3 ± 0.7 | 38.2 ± 1.8 | 11.2 ± 0.3 |
+
+Router purity against ground-truth register ids (fraction of each register's tokens sent to its best slot; per seed). `uniform` and `oracle` read 100% by construction and are not shown.
+
+| mode | purity at P=4 | purity at P=8 |
+|---|---|---|
+| multi | 100%, 98% (seeds 0, 1) | 100%, 99% (seeds 0, 1) |
+
+Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 59.5 ± 1.0 vs q6 57.7 ± 0.3; single q7 59.5 ± 1.5 vs q6 57.7 ± 0.3; uniform q7 58.2 ± 1.3 vs q6 57.0 ± 2.0; multi q7 58.0 ± 4.5 vs q6 42.8 ± 13.3; oracle q7 51.5 ± 3.5 vs q6 55.0 ± 4.5.
 <!-- Q7:END -->
 
 ## What we know / what we do not
@@ -223,6 +255,7 @@ Earlier runs are kept in `results/` and `logs/` for the record. They are not the
 | q4 | subset | 8 | 4000 | 2,3,4 | no | 2 x 1 | 12.0 ± 0.0 | 11.0 ± 0.0 | - | - | Curriculum `query` -> `subset`: stayed at chance, even for the adapter. Task abandoned. |
 | q5 | query | 8 | 6000 | 2,3 | no | 7 x 2 | 56.2 ± 1.2 | 58.5 ± 1.5 | 20, 20 | 30.8 ± 12.8 | Task `query`, K=8, no occupancy gating: slot modes under-trained (near chance) while adapter and single learned. |
 | q6 | query | 4 | 8000 | 2,3 | yes | 6 x 2 | 57.7 ± 0.3 | 57.7 ± 0.3 | 56, 30 | 55.0 ± 4.5 | Occupancy-gated returns, K=4, 8000 steps, 2 seeds, all rungs: headline run (see above). |
+| q7 | query | 4 | 8000 | 2,3 | yes | 5 x 2 | 59.5 ± 1.0 | 59.5 ± 1.5 | 54, 62 | 51.5 ± 3.5 | Random register names in train and eval (learned binding). Running or finished: see its own section. |
 
 Not in the table: `q1`: Smoke test, single seed, easy task. `q3`: Task `subset` (sum of three queried registers), K=8, from scratch: never left chance. Results were not kept in the repo.
 
