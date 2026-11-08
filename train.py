@@ -9,7 +9,8 @@ ap.add_argument("--model", default="Qwen/Qwen3-0.6B")
 ap.add_argument("--layer", type=int, default=12)
 ap.add_argument("--K", type=int, default=8); ap.add_argument("--d_s", type=int, default=64)
 ap.add_argument("--match_params", type=int, default=1)   # single/adapter widened to multi's param count
-ap.add_argument("--task", default="subset")         # query|sum|subset
+ap.add_argument("--task", default="subset")
+ap.add_argument("--curriculum", default="", help="e.g. query:2500,subset:2500 (overrides --steps/--task for training; final eval on last task + query)")         # query|sum|subset
 ap.add_argument("--train_P", default="2,3,4"); ap.add_argument("--test_P", default="2,4,6,8,12,16")
 ap.add_argument("--opr", default="2,4", help="ops per register range")
 ap.add_argument("--steps", type=int, default=4000); ap.add_argument("--bs", type=int, default=32)
@@ -63,11 +64,11 @@ opr = tuple(map(int, a.opr.split(","))); trP = [int(x) for x in a.train_P.split(
 teP = [int(x) for x in a.test_P.split(",")]
 
 @torch.no_grad()
-def evaluate(P, n, opr_, ablate=None):
+def evaluate(P, n, opr_, ablate=None, tname=None):
     if W: W.ablate = ablate
     rng = random.Random(4321 + P); c = 0; bs = 25
     for i in range(0, n, bs):
-        xs, ys, sp = task.batch(bs, [P], opr_, a.task, rng)
+        xs, ys, sp = task.batch(bs, [P], opr_, tname or a.task, rng)
         c += (run(xs, sp, Kmin=P).argmax(-1).cpu() == torch.tensor(ys)).sum().item()
     if W: W.ablate = None
     return c / n
@@ -87,12 +88,14 @@ def purity(P, n=50):
 res = {"args": vars(a), "params": NP, "log": []}
 if W:
     opt = torch.optim.AdamW(W.parameters(), lr=a.lr, weight_decay=0.01); t0 = time.time()
-    for step in range(1, a.steps + 1):
-        xs, ys, sp = task.batch(a.bs, trP, opr, a.task)
+    phases = [(p.split(":")[0], int(p.split(":")[1])) for p in a.curriculum.split(",")] if a.curriculum else [(a.task, a.steps)]
+    sched = [n for n, c in phases for _ in range(c)]; a.task = phases[-1][0]
+    for step in range(1, len(sched) + 1):
+        xs, ys, sp = task.batch(a.bs, trP, opr, sched[step - 1])
         loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
         opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(W.parameters(), 1.0); opt.step()
         if step % 200 == 0:
-            acc = evaluate(trP[0], 100, opr)
+            acc = evaluate(trP[0], 100, opr, tname=sched[step - 1])
             res["log"].append((step, loss.item(), acc)); print(step, round(loss.item(), 3), acc, round(time.time() - t0), flush=True)
     if a.save:
         os.makedirs(os.path.dirname(a.save) or ".", exist_ok=True)
@@ -100,6 +103,8 @@ if W:
 final = {}
 for P in teP:
     final[f"P{P}"] = evaluate(P, a.n_eval, opr)
+if a.curriculum:
+    for P in teP: final[f"q_P{P}"] = evaluate(P, a.n_eval, opr, tname="query")
 final["purity_P4"] = purity(4); final["purity_P8"] = purity(8)
 final["P4_long"] = evaluate(4, a.n_eval, (opr[1] + 3, opr[1] + 8))
 if W and a.mode not in ("adapter",):
