@@ -18,6 +18,7 @@ ap.add_argument("--opr", default="2,4", help="ops per register range")
 ap.add_argument("--steps", type=int, default=4000); ap.add_argument("--bs", type=int, default=32)
 ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--rename", type=int, default=0, help="random register letters + shuffled init order in training and eval")
+ap.add_argument("--opr_curriculum", default="", help="e.g. 1,1:1500;1,2:1500;2,4:5000 = (lo,hi) ops-per-register phases:steps (overrides --steps)")
 ap.add_argument("--n_eval", type=int, default=200)
 ap.add_argument("--out", default="results/run.json"); ap.add_argument("--save", default="")
 ap.add_argument("--init", default="", help="warm-start worker weights from a ckpt (stage-2 fine-tune)")
@@ -96,8 +97,14 @@ if W:
     opt = torch.optim.AdamW(W.parameters(), lr=a.lr, weight_decay=0.01); t0 = time.time()
     phases = [(p.split(":")[0], int(p.split(":")[1])) for p in a.curriculum.split(",")] if a.curriculum else [(a.task, a.steps)]
     sched = [n for n, c in phases for _ in range(c)]; a.task = phases[-1][0]
+    oprs = None
+    if a.opr_curriculum:
+        oprs = []
+        for ph in a.opr_curriculum.split(";"):
+            r, c = ph.split(":"); lo, hi = map(int, r.split(",")); oprs += [(lo, hi)] * int(c)
+        sched = [a.task] * len(oprs)
     for step in range(1, len(sched) + 1):
-        xs, ys, sp = task.batch(a.bs, trP, opr, sched[step - 1], **KW)
+        xs, ys, sp = task.batch(a.bs, trP, oprs[step - 1] if oprs else opr, sched[step - 1], **KW)
         loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
         opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(W.parameters(), 1.0); opt.step()
         if step % 200 == 0:
