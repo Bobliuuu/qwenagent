@@ -1,0 +1,38 @@
+{
+ "args": {
+  "mode": "none",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "K": 8,
+  "d_s": 64,
+  "match_params": 1,
+  "task": "query",
+  "curriculum": "",
+  "train_P": "2,3",
+  "test_P": "2,3,4,6,8,12,16",
+  "opr": "2,4",
+  "steps": 6000,
+  "bs": 32,
+  "lr": 0.001,
+  "seed": 0,
+  "n_eval": 200,
+  "out": "results/q5_none_s0.json",
+  "save": "ckpt/q5_none_s0.pt",
+  "trace": "traces/q5_none_s0.json",
+  "device": "cuda"
+ },
+ "params": 0,
+ "log": [],
+ "final": {
+  "P2": 0.125,
+  "P3": 0.09,
+  "P4": 0.12,
+  "P6": 0.11,
+  "P8": 0.095,
+  "P12": 0.125,
+  "P16": 0.1,
+  "purity_P4": null,
+  "purity_P8": null,
+  "P4_long": 0.08
+ }
+}
