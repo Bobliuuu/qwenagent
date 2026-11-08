@@ -17,9 +17,8 @@ def acc(P, opr_, K=None, **kw):
     rng = random.Random(5000 + P); c = 0
     for i in range(0, b.n, 25):
         xs, ys, sp = T.batch(25, [P], opr_, b.task, rng, **kw)
-        if W and K and W.mode in ("multi", "oracle", "uniform", "multi_rr"): W.K_eff = K
-        enc_kmin = P if not K else 1
-        c += (run(xs, sp, Kmin=enc_kmin).argmax(-1).cpu() == torch.tensor(ys)).sum().item()
+        if W: W.K_force = K            # None -> default (max(train K, P)); int -> force slot count
+        c += (run(xs, sp, Kmin=P).argmax(-1).cpu() == torch.tensor(ys)).sum().item()
     return c / b.n
 out = {}
 for P in map(int, b.P.split(",")):

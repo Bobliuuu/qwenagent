@@ -57,7 +57,7 @@ def run(xs, spans=None, Kmin=1):
     enc = tok(xs, return_tensors="pt", padding=True, return_offsets_mapping=True)
     if W:
         W.reg = reg_tensor(enc, spans).to(dev) if spans is not None else None
-        if W.mode in ("multi", "oracle", "uniform", "multi_rr"): W.K_eff = max(a.K, Kmin)
+        if W.mode in ("multi", "oracle", "uniform", "multi_rr"): W.K_eff = getattr(W, "K_force", None) or max(a.K, Kmin)
         cur["mask"] = enc.attention_mask.float().to(dev)
     enc = {k: v.to(dev) for k, v in enc.items() if k != "offset_mapping"}
     return lm(**enc).logits[:, -1, :][:, digit_ids].float()
