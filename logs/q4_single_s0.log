@@ -1,0 +1,32 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 3739.13it/s]
+mode single trainable params 441281
+200 2.201 0.21 151
+400 2.239 0.24 301
+600 1.64 0.34 450
+800 1.624 0.45 599
+1000 1.081 0.55 748
+1200 1.351 0.52 897
+1400 1.484 0.48 1047
+1600 0.903 0.52 1196
+1800 1.265 0.53 1345
+2000 0.849 0.52 1494
+2200 1.1 0.52 1644
+2400 0.894 0.52 1794
+2600 2.289 0.09 1947
+2800 2.292 0.05 2103
+3000 2.296 0.1 2259
+3200 2.295 0.11 2416
+3400 2.304 0.12 2572
+3600 2.308 0.08 2728
+3800 2.293 0.08 2884
+4000 2.307 0.11 3040
+4200 2.299 0.1 3194
+4400 2.31 0.15 3351
+4600 2.299 0.08 3509
+4800 2.29 0.1 3666
+5000 2.3 0.09 3823
+[W1108 05:41:34.228806306 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 966787072 bytes (free: 693633024, total: 42405855232).
+[W1108 05:41:40.003202837 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1430257664 bytes (free: 1289224192, total: 42405855232).
+[W1108 05:41:48.271913436 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 1885339648 bytes (free: 395837440, total: 42405855232).
+{"P2": 0.11, "P4": 0.1, "P6": 0.075, "P8": 0.125, "P12": 0.1, "P16": 0.065, "q_P2": 0.09, "q_P4": 0.105, "q_P6": 0.09, "q_P8": 0.09, "q_P12": 0.095, "q_P16": 0.12, "purity_P4": null, "purity_P8": null, "P4_long": 0.105, "P4_zero": 0.1, "P4_shuffle": 0.09, "P4_drop:0": 0.105}
