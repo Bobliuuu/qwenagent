@@ -1,13 +1,14 @@
-"""traces/q3_<mode>_s0.json -> figures/gif_q3_<mode>_P<P>.gif (router assignment streaming over tokens).
-usage: make_gifs.py [--trace FILE --out DIR]   (default: all traces/q3_*_s0.json -> figures/)"""
-import os, sys, json, glob, argparse, io
+"""traces/<pre>_<mode>_s0.json -> figures/gif_<pre>_<mode>_P<P>.gif (router assignment streaming over tokens),
+plus figures/gif_<pre>_multi_vs_oracle_P<P>.gif (side by side, same program).
+usage: make_gifs.py [--trace FILE --out DIR --prefix q6]   (default: headline prefix, modes multi + oracle)"""
+import os, sys, json, glob, argparse, io, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from PIL import Image
-from common import ROOT, COLOR
+from common import ROOT, COLOR, load, headline
 
 PAL = plt.get_cmap("tab20")
 ORDER = list(range(0, 20, 2)) + list(range(1, 20, 2))
@@ -75,14 +76,63 @@ def render(tr, title, path, wrap=64, dur=110):
     q[0].save(path, save_all=True, append_images=q[1:], duration=[dur] * (T) + [140] * 14, loop=0, optimize=True, disposal=1)
     print("wrote", path, f"{os.path.getsize(path)/1e6:.2f} MB", f"{T} tokens")
 
+def render_pair(trA, trB, nameA, nameB, path, wrap=64, dur=110):
+    """two heatmaps for the SAME program: A on top, B below, shared token strip + ground-truth register strip."""
+    toks, reg = trA["tokens"], np.array(trA["reg"]); T = len(toks)
+    assert toks == trB["tokens"], "traces are for different programs"
+    fig = plt.figure(figsize=(8.4, 6.0), dpi=72, facecolor=BG)
+    gs = fig.add_gridspec(3, 1, height_ratios=[1.3, 1.5, 1.5], hspace=.62, left=.1, right=.97, top=.89, bottom=.07)
+    axt, axa, axb = (fig.add_subplot(gs[i]) for i in range(3))
+    fig.text(.1, .955, f"same P={trA['P']} program: learned router vs true register ids", fontsize=11, weight="bold", color=FG, va="center")
+    axt.set_xlim(0, wrap + 1); axt.axis("off"); x = 0; ln = 0; pos = []
+    for t in toks:
+        s_ = t.strip() or t
+        if x + len(s_) + 1 > wrap: ln += 1; x = 0
+        pos.append((x, ln)); x += len(s_) + 1
+    nl = ln + 1; axt.set_ylim(nl + .6, -.6)
+    texts = [axt.text(x, ln, t.strip() or t, family="monospace", fontsize=10.5, color=rcol(r), va="center", alpha=0, weight="bold") for (x, ln), t, r in zip(pos, toks, reg)]
+    cur = Rectangle((0, 0), 1, .8, fill=False, ec=FG, lw=1.5); axt.add_patch(cur)
+    ims, Ms, verd = [], [], []
+    for ax, tr, nm in ((axa, trA, nameA), (axb, trB, nameB)):
+        A = np.array(tr["assign"]); P = A.shape[1]; M = np.full((P, T), np.nan)
+        ims.append(ax.imshow(M, aspect="auto", cmap="Greys", vmin=0, vmax=max(.6, A.max()), interpolation="nearest")); Ms.append((M, A))
+        ax.set_yticks(range(P)); ax.set_yticklabels([f"slot {k}" for k in range(P)], fontsize=8); ax.set_xlim(-.5, T - .5)
+        ax.set_title(nm, fontsize=9, loc="left", color=FG, pad=10)
+        for t in range(T): ax.add_patch(Rectangle((t - .5, -1.0), 1, .55, color=rcol(reg[t]), clip_on=False, lw=0))
+        for sp in ax.spines.values(): sp.set_visible(False)
+        ok = tr["pred"] == tr["answer"]
+        verd.append(ax.text(T - .5, -1.6, "", ha="right", va="center", fontsize=9, weight="bold", family="monospace"))
+        verd[-1]._msg = (f"pred {tr['pred']} answer {tr['answer']} {'CORRECT' if ok else 'wrong'}", "#1a9a5a" if ok else "#c0463b")
+    axb.set_xlabel("token position (colour strip above each map = ground-truth register of the token)", fontsize=8)
+    frames = []
+    for t in range(T):
+        for im, (M, A) in zip(ims, Ms): M[:, t] = A[t]; im.set_data(M)
+        texts[t].set_alpha(1); x, ln = pos[t]; cur.set_xy((x - .25, ln - .4)); cur.set_width(len(toks[t].strip() or toks[t]) + .5)
+        if t == T - 1:
+            for v in verd: v.set_text(v._msg[0]); v.set_color(v._msg[1])
+        fig.canvas.draw(); frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+    plt.close(fig); frames += [frames[-1]] * 14
+    q = [f.quantize(colors=48, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE) for f in frames]
+    q[0].save(path, save_all=True, append_images=q[1:], duration=[dur] * T + [140] * 14, loop=0, optimize=True, disposal=1)
+    print("wrote", path, f"{os.path.getsize(path)/1e6:.2f} MB", f"{T} tokens")
+
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--trace"); ap.add_argument("--out", default=os.path.join(ROOT, "figures")); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--trace"); ap.add_argument("--out", default=os.path.join(ROOT, "figures"))
+    ap.add_argument("--prefix"); ap.add_argument("--modes", default="multi,oracle"); a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    files = [a.trace] if a.trace else sorted(glob.glob(os.path.join(ROOT, "traces", "q3_*_s0.json")))
-    if not files: print("no traces found (traces/q3_*_s0.json); nothing to render"); return
+    pre = a.prefix or headline(load())
+    if a.trace: files = [a.trace]
+    elif pre: files = [os.path.join(ROOT, "traces", f"{pre}_{m}_s0.json") for m in a.modes.split(",")]; files = [f for f in files if os.path.exists(f)]
+    else: files = []
+    if not files: print("no traces found; nothing to render"); return
+    cache = {}
     for f in files:
-        base = os.path.splitext(os.path.basename(f))[0]
-        for tr in json.load(open(f)):
-            mode = base.split("_")[1] if base.startswith("q3_") else "synthetic"
+        base = os.path.splitext(os.path.basename(f))[0]; mode = base.split("_", 1)[1].rsplit("_s", 1)[0] if re.match(r"q\d+_", base) else "synthetic"
+        cache[mode] = json.load(open(f))
+        for tr in cache[mode]:
             render(tr, f"{mode}: router slot assignment over a P={tr['P']} program", os.path.join(a.out, f"gif_{base}_P{tr['P']}.gif"))
+    if "multi" in cache and "oracle" in cache and not a.trace:
+        for ta, tb in zip(cache["multi"], cache["oracle"]):
+            if ta["tokens"] == tb["tokens"]:
+                render_pair(ta, tb, "multi (learned routing)", "oracle (true register ids)", os.path.join(a.out, f"gif_{pre}_multi_vs_oracle_P{ta['P']}.gif"))
 if __name__ == "__main__": main()

@@ -22,7 +22,7 @@
 
 <!-- residual at layer 12 -->
 <path class="ar" d="M300,235 H640" marker-end="url(#a)"/>
-<text x="470" y="225" text-anchor="middle" class="m">residual stream h (layer 12 output)</text>
+<text x="470" y="225" text-anchor="middle" class="m">residual stream h (output of layers[12])</text>
 <circle cx="600" cy="235" r="13" class="fz"/><text x="600" y="240" text-anchor="middle" class="b" font-size="16">+</text>
 
 <!-- worker block -->
@@ -31,11 +31,11 @@
 
 <rect class="tr" x="335" y="86" width="85" height="68" rx="8"/><text x="377" y="108" text-anchor="middle" class="b">router</text><text x="377" y="125" text-anchor="middle" class="m">token query vs</text><text x="377" y="139" text-anchor="middle" class="m">slot keys: softmax</text>
 <rect class="tr" x="440" y="86" width="85" height="68" rx="8"/><text x="482" y="108" text-anchor="middle" class="b">K slots</text><text x="482" y="125" text-anchor="middle" class="m">private GRU</text><text x="482" y="139" text-anchor="middle" class="m">states (persist)</text>
-<rect class="rt" x="540" y="86" width="60" height="68" rx="8"/><text x="570" y="112" text-anchor="middle" class="b">return</text><text x="570" y="129" text-anchor="middle" class="m">MLP, sum</text><text x="570" y="142" text-anchor="middle" class="m">over slots</text>
+<rect class="rt" x="540" y="86" width="60" height="68" rx="8"/><text x="570" y="112" text-anchor="middle" class="b">return</text><text x="570" y="129" text-anchor="middle" class="m">MLP, sum,</text><text x="570" y="142" text-anchor="middle" class="m">occ-gated</text>
 <path class="tg" d="M420,120 H440" marker-end="url(#u)"/><path class="tg" d="M525,120 H540" marker-end="url(#u)"/>
 <!-- inject -->
 <path class="tg" d="M340,235 V170 M340,170 V154" marker-end="url(#u)"/>
-<text x="332" y="190" text-anchor="end" class="m">tap output of layer 12</text>
+<text x="332" y="190" text-anchor="end" class="m" font-size="10.5">forward hook on layers[12] output</text>
 <!-- return -->
 <path class="rg" d="M600,154 V222" marker-end="url(#g)"/>
 <text x="612" y="190" class="m gt">added to residual</text>
@@ -43,16 +43,19 @@
 <path class="tg" d="M482,86 C482,74 510,74 510,86" />
 <text x="465" y="190" text-anchor="middle" class="m">state carried token to token (recurrent)</text>
 
+<text x="465" y="296" text-anchor="middle" class="m">Occupancy gating: a slot that was never written returns nothing (no identity noise).</text>
+<text x="465" y="313" text-anchor="middle" class="m">Variant multi_rr: the return is weighted by a token-conditioned softmax over slots (routed read).</text>
+
 <!-- slot detail -->
-<text x="20" y="330" class="b">Slot identity is a random per-sequence vector, so K can be raised at test time.</text>
+<text x="20" y="338" class="b">Slot identity is a random per-sequence vector, so K can be raised at test time.</text>
 <g>
- <rect class="tr" x="20" y="345" width="82" height="48" rx="8"/><text x="61" y="366" text-anchor="middle" class="b">slot 0</text><text x="61" y="383" text-anchor="middle" class="m">binds one reg</text>
- <rect class="tr" x="112" y="345" width="82" height="48" rx="8"/><text x="153" y="366" text-anchor="middle" class="b">slot 1</text><text x="153" y="383" text-anchor="middle" class="m">binds one reg</text>
- <rect class="tr" x="204" y="345" width="82" height="48" rx="8"/><text x="245" y="366" text-anchor="middle" class="b">slot 2</text><text x="245" y="383" text-anchor="middle" class="m">binds one reg</text>
+ <rect class="tr" x="20" y="350" width="82" height="48" rx="8"/><text x="61" y="366" text-anchor="middle" class="b">slot 0</text><text x="61" y="383" text-anchor="middle" class="m">binds one reg</text>
+ <rect class="tr" x="112" y="350" width="82" height="48" rx="8"/><text x="153" y="366" text-anchor="middle" class="b">slot 1</text><text x="153" y="383" text-anchor="middle" class="m">binds one reg</text>
+ <rect class="tr" x="204" y="350" width="82" height="48" rx="8"/><text x="245" y="366" text-anchor="middle" class="b">slot 2</text><text x="245" y="383" text-anchor="middle" class="m">binds one reg</text>
  <text x="320" y="375" text-anchor="middle" class="b" font-size="20">...</text>
- <rect class="tr" x="350" y="345" width="82" height="48" rx="8"/><text x="391" y="366" text-anchor="middle" class="b">slot K-1</text><text x="391" y="383" text-anchor="middle" class="m">binds one reg</text>
+ <rect class="tr" x="350" y="350" width="82" height="48" rx="8"/><text x="391" y="366" text-anchor="middle" class="b">slot K-1</text><text x="391" y="383" text-anchor="middle" class="m">binds one reg</text>
 </g>
-<text x="460" y="366" class="m">Learned binding, not given: the router decides which</text>
+<text x="460" y="366" class="m">Intended binding (learned in multi, given in oracle): which</text>
 <text x="460" y="383" class="m">slot absorbs each register's ops. Same weights for every slot.</text>
 
 <!-- legend -->
