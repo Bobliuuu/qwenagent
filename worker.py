@@ -11,9 +11,9 @@ Return = sum_k phi(LN(s_k)) added to the residual BEFORE the remaining layers.""
 import torch, torch.nn as nn, torch.nn.functional as F
 
 class Workers(nn.Module):
-    def __init__(s, d_model, K=8, d_s=64, mode="multi", d_k=64, single_width=None):
+    def __init__(s, d_model, K=8, d_s=64, mode="multi", d_k=64, single_width=None, occ_gate=True):
         super().__init__()
-        s.mode, s.K, s.d_s = mode, K, d_s
+        s.mode, s.K, s.d_s, s.occ_gate = mode, K, d_s, occ_gate
         if mode == "single": s.K_eff, s.ds_eff = 1, (single_width or d_s * K)
         else: s.K_eff, s.ds_eff = K, d_s
         ds = s.ds_eff
@@ -43,6 +43,7 @@ class Workers(nn.Module):
         st = torch.randn(B, K, ds, device=h.device) * 0.5
         x = s.inp(hf); q = s.q(hf); wg = torch.sigmoid(s.wg(hf)).squeeze(-1)
         outs, assigns = [], []
+        occ = torch.zeros(B, K, device=h.device)          # cumulative write mass per slot (0 = never used)
         for t in range(T):
             m = mask[:, t]
             if s.mode == "oracle":
@@ -62,7 +63,9 @@ class Workers(nn.Module):
             g = g.clamp(max=1.0)
             new = s.cell(x[:, t, None].expand(B, K, ds).reshape(B * K, ds), st.reshape(B * K, ds)).view(B, K, ds)
             st = (1 - g) * st + g * new
+            occ = (occ + g.squeeze(-1)).clamp(max=1.0)
             pk = s.phi(s.ln(st))                                     # [B,K,D]
+            if s.occ_gate: pk = pk * occ.unsqueeze(-1)               # unused slots (pure identity noise) return nothing
             if s.mode == "multi_rr" and K > 1:
                 rl = (s.k2(st) * s.q2(hf[:, t])[:, None]).sum(-1) / 8.0
                 pk = pk * F.softmax(rl, dim=-1).unsqueeze(-1) * K     # routed read (scaled to keep magnitude)

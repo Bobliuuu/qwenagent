@@ -8,6 +8,7 @@ ap.add_argument("--mode", default="multi")          # multi|multi_rr|oracle|unif
 ap.add_argument("--model", default="Qwen/Qwen3-0.6B")
 ap.add_argument("--layer", type=int, default=12)
 ap.add_argument("--K", type=int, default=8); ap.add_argument("--d_s", type=int, default=64)
+ap.add_argument("--occ", type=int, default=1, help="gate each slot return by its write occupancy")
 ap.add_argument("--match_params", type=int, default=1)   # single/adapter widened to multi's param count
 ap.add_argument("--task", default="subset")
 ap.add_argument("--curriculum", default="", help="e.g. query:2500,subset:2500 (overrides --steps/--task for training; final eval on last task + query)")         # query|sum|subset
@@ -32,7 +33,7 @@ if a.mode != "none":
     sw = None
     if a.match_params and a.mode == "single": sw = wk.matched_single_width(dm, a.K, a.d_s)
     if a.match_params and a.mode == "adapter": sw = wk.matched_adapter_width(dm, a.K, a.d_s)
-    W = wk.Workers(dm, a.K, a.d_s, a.mode, single_width=sw).to(dev)
+    W = wk.Workers(dm, a.K, a.d_s, a.mode, single_width=sw, occ_gate=bool(a.occ)).to(dev)
     cur = {"mask": None}
     def hook(mod, inp, out):
         h = out[0] if isinstance(out, tuple) else out
