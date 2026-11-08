@@ -16,7 +16,7 @@ Agent frameworks get "subagents" by calling a model again and again from the out
 
 We test this on **interleaved register programs**: P registers each get their own stream of arithmetic ops (mod 10), all shuffled together in one token stream, and the model must report the value of one queried register. It is trained on 2-3 registers and tested on 2 to 16.
 
-**The cool part is that embedding trainable stateful modules inside a frozen LM works at all:** frozen Qwen is at chance on this task, and with the workers attached it learns it, and zeroing the return channel sends it straight back to chance. **The honest part is that the comparison is not (yet) a win:** the workers do not beat a stateless adapter or a single shared state at extrapolating to more registers, and a probe suggests the missing ingredient is learned *binding* of register names to states. Numbers are in the generated tables below; q7 is the run built to test the binding hypothesis.
+**The cool part is that embedding trainable stateful modules inside a frozen LM works at all:** frozen Qwen is at chance on this task, and with the workers attached it learns it, and zeroing the return channel sends it straight back to chance. **The honest part is that private slots are not a win:** with random register names (q7, 5 seeds) the workers generalise from 2-3 to 16 registers, but so do a stateless adapter and a single shared state, and the slot version is less stable across seeds. What made tracking generalise was randomising the names, not separating the states. Numbers are in the generated tables below.
 
 ![architecture](viz/arch.svg)
 
@@ -200,49 +200,50 @@ How to read it:
 ## q7: learned binding
 
 <!-- Q7:BEGIN (generated) -->
-**q7: learned binding** (task `query`, random register names in train and eval). _Partial: 10 finished runs over 5 modes so far; rows with fewer seeds have wide uncertainty._
+**q7: learned binding** (task `query`, random register names in train and eval). _Partial: 19 finished runs over 5 modes so far; rows with fewer seeds have wide uncertainty._
 
 **q7 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
 
 | mode | n seeds | trainable params | P=2 | P=3 | P=4 | P=6 | P=8 | P=12 | P=16 |
 |---|---|---|---|---|---|---|---|---|---|
-| adapter | 2 | 507,873 | 59.5 ± 1.0 | 59.2 ± 0.3 | 51.5 ± 2.0 | 48.5 ± 1.0 | 40.8 ± 0.2 | 36.0 ± 2.5 | 26.5 ± 1.0 |
-| single | 2 | 441,281 | 59.5 ± 1.5 | 56.5 ± 2.0 | 54.2 ± 1.3 | 44.2 ± 1.8 | 38.7 ± 2.2 | 33.5 ± 5.5 | 23.2 ± 1.8 |
+| adapter | 5 | 507,873 | 60.1 ± 1.7 | 56.9 ± 2.1 | 52.6 ± 2.2 | 47.6 ± 2.3 | 41.7 ± 1.7 | 34.0 ± 3.0 | 27.8 ± 2.0 |
+| single | 5 | 441,281 | 60.9 ± 2.2 | 57.6 ± 1.8 | 53.4 ± 1.3 | 45.0 ± 1.4 | 38.3 ± 3.6 | 34.0 ± 4.0 | 23.4 ± 3.0 |
 | uniform | 2 | 441,281 | 58.2 ± 1.3 | 56.0 ± 0.5 | 51.8 ± 2.8 | 26.0 ± 2.0 | 12.2 ± 0.3 | 10.8 ± 0.3 | 10.8 ± 0.8 |
-| multi | 2 | 441,281 | 58.0 ± 4.5 | 53.8 ± 2.7 | 54.8 ± 1.3 | 42.2 ± 1.3 | 39.5 ± 1.5 | 38.8 ± 5.2 | 30.2 ± 3.8 |
+| multi | 5 | 441,281 | 51.3 ± 10.7 | 45.7 ± 10.2 | 46.0 ± 10.4 | 35.9 ± 9.0 | 36.2 ± 8.1 | 33.0 ± 7.6 | 26.3 ± 6.5 |
 | oracle | 2 | 441,281 | 51.5 ± 3.5 | 49.0 ± 0.5 | 40.5 ± 1.0 | 18.2 ± 8.8 | 13.8 ± 0.3 | 12.0 ± 1.0 | 11.5 ± 1.0 |
 
 Intervention ablations at P4 (accuracy %, mean ± std; `P4_long` = more ops per register):
 
 | mode | intact | zero return | shuffle across batch | drop slot 0 | more ops / register |
 |---|---|---|---|---|---|
-| adapter | 51.5 ± 2.0 | 13.0 ± 0.0 | 10.0 ± 1.5 | n/a | 12.8 ± 0.3 |
-| single | 54.2 ± 1.3 | 13.0 ± 0.0 | 12.5 ± 0.5 | 13.0 ± 0.0 | 10.5 ± 0.5 |
+| adapter | 52.6 ± 2.2 | 13.0 ± 0.0 | 10.0 ± 1.5 | n/a | 12.2 ± 0.9 |
+| single | 53.4 ± 1.3 | 13.0 ± 0.0 | 14.0 ± 2.1 | 13.0 ± 0.0 | 12.5 ± 2.0 |
 | uniform | 51.8 ± 2.8 | 13.0 ± 0.0 | 12.8 ± 2.2 | 53.0 ± 0.5 | 13.2 ± 1.2 |
-| multi | 54.8 ± 1.3 | 13.0 ± 0.0 | 18.2 ± 1.8 | 51.2 ± 2.3 | 7.3 ± 0.8 |
+| multi | 46.0 ± 10.4 | 13.0 ± 0.0 | 24.2 ± 8.4 | 41.4 ± 10.1 | 9.1 ± 1.8 |
 | oracle | 40.5 ± 1.0 | 13.0 ± 0.0 | 14.3 ± 0.7 | 38.2 ± 1.8 | 11.2 ± 0.3 |
 
 Router purity against ground-truth register ids (fraction of each register's tokens sent to its best slot; per seed). `uniform` and `oracle` read 100% by construction and are not shown.
 
 | mode | purity at P=4 | purity at P=8 |
 |---|---|---|
-| multi | 100%, 98% (seeds 0, 1) | 100%, 99% (seeds 0, 1) |
+| multi | 100%, 98%, 97%, 99%, 93% (seeds 0, 1) | 100%, 99%, 97%, 100%, 91% (seeds 0, 1) |
 
-Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 59.5 ± 1.0 vs q6 57.7 ± 0.3; single q7 59.5 ± 1.5 vs q6 57.7 ± 0.3; uniform q7 58.2 ± 1.3 vs q6 57.0 ± 2.0; multi q7 58.0 ± 4.5 vs q6 42.8 ± 13.3; oracle q7 51.5 ± 3.5 vs q6 55.0 ± 4.5.
+Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 60.1 ± 1.7 vs q6 57.7 ± 0.3; single q7 60.9 ± 2.2 vs q6 57.7 ± 0.3; uniform q7 58.2 ± 1.3 vs q6 57.0 ± 2.0; multi q7 51.3 ± 10.7 vs q6 42.8 ± 13.3; oracle q7 51.5 ± 3.5 vs q6 55.0 ± 4.5.
 <!-- Q7:END -->
 
 ## What we know / what we do not
 
 **Established by the data in `results/`:**
 - Embedding trainable stateful workers in a frozen Qwen3-0.6B works: accuracy goes from chance to well above chance at the trained sizes, and zeroing the return channel returns every mode to chance. The answer flows through the injected modules.
-- Occupancy gating plus K=4 (q6) let the slot modes learn the task in at least one seed each, which the earlier K=8 runs did not (see the timeline); seed variance for `multi` and `multi_rr` is still large.
-- No worker mode clearly beats the stateless adapter or the single shared state at extrapolating to more registers (any nominal edge for `multi` is within its seed noise and comes with a lower in-distribution score). All modes are near chance by 8-12 registers.
-- The probes point at binding by register name as the bottleneck (one checkpoint per mode).
+- **Randomising register names during training is what makes tracking generalise (q7).** After training on 2-3 registers, adapter, single state and `multi` all keep a well-above-chance accuracy at 16 registers; with fixed names (q6) every mode is near chance by 8-12 registers. Fixed letters let models memorise names instead of tracking.
+- **Private slots do not beat a shared state or a stateless adapter (q7, 5 seeds each).** Paired by seed at 12 and 16 registers, `multi` wins against the adapter in 2 of 5 seeds and against `single` in 2-3 of 5, with a mean difference within about 3 points either way, and it is far less stable across seeds than the baselines. The nominal edge seen with 2 seeds disappeared with 5.
+- The learned router does bind registers to slots cleanly in q7 (purity near 1.0), yet that does not turn into an accuracy advantage. In this task the frozen upper layers appear to do most of the tracking from a small trained adapter.
+- Every mode collapses when programs have more operations per register: that, not register count, is the unsolved wall.
 
 **Not established:**
-- That routing (the "subagent" claim) helps. In the headline run `multi` is not better than `single` or `adapter`, and its slots do not seem to be used.
-- That q7 (random names) changes this. Until q7 files are in the table, that is a hypothesis.
-- Anything beyond one model (Qwen3-0.6B), one injection layer, one task family, two seeds.
+- That routing or private working memory (the "subagent" claim) helps. On this task it does not, at this scale.
+- Why `oracle` and `uniform` break down from about 6 registers in q7. This is an open anomaly, not a finding.
+- Anything beyond one model (Qwen3-0.6B), one injection layer and one task family. The combination (`subset`) task is not solved.
 
 ## What we tried (timeline)
 
@@ -255,7 +256,7 @@ Earlier runs are kept in `results/` and `logs/` for the record. They are not the
 | q4 | subset | 8 | 4000 | 2,3,4 | no | 2 x 1 | 12.0 ± 0.0 | 11.0 ± 0.0 | - | - | Curriculum `query` -> `subset`: stayed at chance, even for the adapter. Task abandoned. |
 | q5 | query | 8 | 6000 | 2,3 | no | 7 x 2 | 56.2 ± 1.2 | 58.5 ± 1.5 | 20, 20 | 30.8 ± 12.8 | Task `query`, K=8, no occupancy gating: slot modes under-trained (near chance) while adapter and single learned. |
 | q6 | query | 4 | 8000 | 2,3 | yes | 6 x 2 | 57.7 ± 0.3 | 57.7 ± 0.3 | 56, 30 | 55.0 ± 4.5 | Occupancy-gated returns, K=4, 8000 steps, 2 seeds, all rungs: headline run (see above). |
-| q7 | query | 4 | 8000 | 2,3 | yes | 5 x 2 | 59.5 ± 1.0 | 59.5 ± 1.5 | 54, 62 | 51.5 ± 3.5 | Random register names in train and eval (learned binding). Running or finished: see its own section. |
+| q7 | query | 4 | 8000 | 2,3 | yes | 5 x 5 | 60.1 ± 1.7 | 60.9 ± 2.2 | 54, 62, 60, 49, 32 | 51.5 ± 3.5 | Random register names in train and eval (learned binding). Generalises to 16 registers for adapter, single and multi (5 seeds); private slots do not beat the shared state or the stateless adapter. |
 
 Not in the table: `q1`: Smoke test, single seed, easy task. `q3`: Task `subset` (sum of three queried registers), K=8, from scratch: never left chance. Results were not kept in the repo.
 

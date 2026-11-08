@@ -94,7 +94,7 @@ OUTCOME = {
     "q4": "Curriculum `query` -> `subset`: stayed at chance, even for the adapter. Task abandoned.",
     "q5": "Task `query`, K=8, no occupancy gating: slot modes under-trained (near chance) while adapter and single learned.",
     "q6": "Occupancy-gated returns, K=4, 8000 steps, 2 seeds, all rungs: headline run (see above).",
-    "q7": "Random register names in train and eval (learned binding). Running or finished: see its own section.",
+    "q7": "Random register names in train and eval (learned binding). Generalises to 16 registers for adapter, single and multi (5 seeds); private slots do not beat the shared state or the stateless adapter.",
 }
 
 def timeline(data):

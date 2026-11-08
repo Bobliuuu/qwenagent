@@ -153,3 +153,7 @@ This is a defensible, honest claim if C1 fails, and should be reported as such. 
 3. Train-longer/convergence control: 20000 steps, two modes (multi-routed-read, best single), with and without curriculum on P, to see whether the gap is an optimisation-speed artifact. About 3 hours.
 
 Decision rule: if experiment 1 shows oracle ~ uniform ~ single within seed spread, report C5 (shared state suffices) and stop claiming private-slot benefit. If oracle >> learned >= single, pursue C1/C3 with routed read as the headline.
+
+
+### Final q7 verdict (5 seeds each for adapter / single / multi)
+Random register names in train and eval make tracking generalise from 2-3 to 16 registers for all three, but `multi` (private slots, learned routing) does not beat the stateless adapter or the single shared state: paired by seed at 12 and 16 registers it wins 2-3 of 5 with mean differences of about +-3 points, and its seed variance is several times larger. The 2-seed edge disappeared with 5 seeds. The defensible empirical claims are (1) stateful worker modules embedded in a frozen LLM work, and (2) name randomisation, not slot separation, drives extrapolation in register tracking. Open: why oracle/uniform break from ~6 registers; the `subset` combination task; longer programs (more ops per register) collapse every mode.
