@@ -33,7 +33,7 @@ def table_for(pre, res, title=None):
         L += ["", "Router purity against ground-truth register ids (fraction of each register's tokens sent to its best slot; per seed). "
               "`uniform` and `oracle` read 100% by construction and are not shown.", "", "| mode | purity at P=4 | purity at P=8 |", "|---|---|---|"]
         for m in pur:
-            L.append(f"| {m} | " + " | ".join(", ".join(pc(v) for v in seed_vals(res[m], k)) + " (seeds 0, 1)" for k in ("purity_P4", "purity_P8")) + " |")
+            L.append(f"| {m} | " + " | ".join(", ".join(pc(v) for v in seed_vals(res[m], k)) + " (seeds in order)" for k in ("purity_P4", "purity_P8")) + " |")
     return "\n".join(L)
 
 def probe_block(pre, probes):
@@ -118,7 +118,7 @@ def q7_block(data):
         res = data[pre]; n_done = sum(len(v) for v in res.values())
         partial = len(res) < 6 or any(len(v) < 2 for v in res.values())
         out.append(f"**{pre}: learned binding** (task `query`, random register names in train and eval). "
-                   + (f"_Partial: {n_done} finished runs over {len(res)} modes so far; rows with fewer seeds have wide uncertainty._" if partial else "_Complete._"))
+                   + (f"_Final: {n_done} runs over {len(res)} modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._" if partial else "_Complete._"))
         out.append("")
         out.append(table_for(pre, res, title=f"{pre} (learned binding)"))
         out.append("")

@@ -28,8 +28,8 @@ Router purity against ground-truth register ids (fraction of each register's tok
 
 | mode | purity at P=4 | purity at P=8 |
 |---|---|---|
-| multi | 76%, 94% (seeds 0, 1) | 62%, 96% (seeds 0, 1) |
-| multi_rr | 71%, 91% (seeds 0, 1) | 61%, 93% (seeds 0, 1) |
+| multi | 76%, 94% (seeds in order) | 62%, 96% (seeds in order) |
+| multi_rr | 71%, 91% (seeds in order) | 61%, 93% (seeds in order) |
 
 ## Probes
 
@@ -86,7 +86,7 @@ Slot count K changed at test time (trained at K=4), accuracy %:
 
 ## q7: learned binding
 
-**q7: learned binding** (task `query`, random register names in train and eval). _Partial: 19 finished runs over 5 modes so far; rows with fewer seeds have wide uncertainty._
+**q7: learned binding** (task `query`, random register names in train and eval). _Final: 19 runs over 5 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
 
 **q7 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
 
@@ -112,10 +112,10 @@ Router purity against ground-truth register ids (fraction of each register's tok
 
 | mode | purity at P=4 | purity at P=8 |
 |---|---|---|
-| multi | 100%, 98%, 97%, 99%, 93% (seeds 0, 1) | 100%, 99%, 97%, 100%, 91% (seeds 0, 1) |
+| multi | 100%, 98%, 97%, 99%, 93% (seeds in order) | 100%, 99%, 97%, 100%, 91% (seeds in order) |
 
 Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 60.1 ± 1.7 vs q6 57.7 ± 0.3; single q7 60.9 ± 2.2 vs q6 57.7 ± 0.3; uniform q7 58.2 ± 1.3 vs q6 57.0 ± 2.0; multi q7 51.3 ± 10.7 vs q6 42.8 ± 13.3; oracle q7 51.5 ± 3.5 vs q6 55.0 ± 4.5.
-**q9: learned binding** (task `query`, random register names in train and eval). _Partial: 6 finished runs over 3 modes so far; rows with fewer seeds have wide uncertainty._
+**q9: learned binding** (task `query`, random register names in train and eval). _Final: 6 runs over 3 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
 
 **q9 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
 
@@ -137,7 +137,7 @@ Router purity against ground-truth register ids (fraction of each register's tok
 
 | mode | purity at P=4 | purity at P=8 |
 |---|---|---|
-| multi | 100%, 54% (seeds 0, 1) | 100%, 46% (seeds 0, 1) |
+| multi | 100%, 54% (seeds in order) | 100%, 46% (seeds in order) |
 
 
 ## Timeline
