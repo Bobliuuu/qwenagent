@@ -1,0 +1,21 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 3395.56it/s]
+mode single trainable params 441281
+200 1.317 0.36 72
+400 1.28 0.32 143
+600 1.316 0.34 215
+800 1.218 0.29 286
+1000 1.267 0.29 357
+1200 1.262 0.28 428
+1400 1.309 0.32 500
+1600 1.273 0.33 583
+1800 1.283 0.34 675
+2000 1.234 0.4 767
+2200 1.243 0.32 859
+2400 1.295 0.35 952
+2600 1.239 0.29 1044
+2800 1.226 0.3 1137
+3000 1.288 0.29 1230
+3200 1.23 0.33 1341
+3400 1.224 0.35 1452
+3600 1.21 0.32 1563

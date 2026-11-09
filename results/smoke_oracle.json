@@ -1,0 +1,33 @@
+{
+ "args": {
+  "mode": "oracle",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "K": 8,
+  "d_s": 64,
+  "match_params": 1,
+  "task": "subset",
+  "train_P": "2,3,4",
+  "test_P": "3,8",
+  "opr": "2,4",
+  "steps": 40,
+  "bs": 32,
+  "lr": 0.001,
+  "seed": 0,
+  "n_eval": 25,
+  "out": "results/smoke_oracle.json",
+  "save": "",
+  "trace": "",
+  "device": "cuda"
+ },
+ "params": 441281,
+ "log": [],
+ "final": {
+  "P3": 0.08,
+  "P8": 0.12,
+  "P4_long": 0.2,
+  "P4_zero": 0.08,
+  "P4_shuffle": 0.08,
+  "P4_drop:0": 0.12
+ }
+}

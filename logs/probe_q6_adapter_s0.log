@@ -1,0 +1,26 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 3453.00it/s]
+warm start ckpt/q6_adapter_s0.pt
+mode adapter trainable params 507873
+{
+ "P2": 0.605,
+ "P2_renamed": 0.19,
+ "P2_shuffled_init": 0.54,
+ "P2_more_ops": 0.17,
+ "P3": 0.685,
+ "P3_renamed": 0.155,
+ "P3_shuffled_init": 0.425,
+ "P3_more_ops": 0.17,
+ "P4": 0.31,
+ "P4_renamed": 0.175,
+ "P4_shuffled_init": 0.245,
+ "P4_more_ops": 0.155,
+ "P6": 0.2,
+ "P6_renamed": 0.075,
+ "P6_shuffled_init": 0.155,
+ "P6_more_ops": 0.095,
+ "P8": 0.155,
+ "P8_renamed": 0.085,
+ "P8_shuffled_init": 0.11,
+ "P8_more_ops": 0.075
+}
