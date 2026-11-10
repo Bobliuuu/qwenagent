@@ -36,6 +36,9 @@ BATCHES = {
  "C": [(f"cap_{v}_d8", S3) for v in ("multi", "oracle", "single_eq", "single_ds", "single_max")] + [("cap_single_max_d16", S3)],
 }
 
+# D: reruns of the 3 seeds that OOM-ed when 3 processes shared one 22GB GPU (one process per container)
+BATCHES["D"] = [("cap_single_eq_d64", (0,)), ("opr_multi", (2,)), ("opr_oracle", (0,))]
+
 @app.local_entrypoint()
 def main(batch: str = "smoke"):
     # spawn (not starmap) so every cell survives `modal run --detach` after this process exits; results land in the volume

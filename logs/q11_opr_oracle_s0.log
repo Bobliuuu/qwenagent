@@ -1,0 +1,45 @@
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:  93%|█████████▎| 289/311 [00:00<00:00, 2860.31it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 3011.42it/s]
+mode oracle trainable params 441281
+200 0.941 0.28 59
+400 0.368 0.26 117
+600 0.248 0.34 176
+800 0.364 0.34 234
+1000 0.695 0.42 317
+1200 0.977 0.41 400
+1400 0.51 0.5 483
+1600 0.521 0.49 566
+1800 1.405 0.55 696
+2000 1.504 0.54 827
+2200 1.25 0.58 955
+2400 0.911 0.54 1086
+2600 1.281 0.6 1217
+2800 1.116 0.62 1346
+Traceback (most recent call last):
+  File "/app/train.py", line 111, in <module>
+    loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
+                           ^^^^^^^^^^^
+  File "/app/train.py", line 69, in run
+    return lm(**enc).logits[:, -1, :][:, digit_ids].float()
+           ^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 481, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.02 GiB. GPU 0 has a total capacity of 22.06 GiB of which 80.12 MiB is free. Process 1 has 21.96 GiB memory in use. Process 1 has 21.96 GiB memory in use. Process 1 has 21.96 GiB memory in use. Of the allocated memory 4.47 GiB is allocated by PyTorch, and 732.28 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
