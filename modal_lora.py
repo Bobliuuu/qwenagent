@@ -22,6 +22,11 @@ def job(script, mode, seed):
 
 JOBS = [("run_q10.sh", v, s) for v in ("lora_pre", "lora_post", "none") for s in range(5)]
 
+@app.function(image=modal.Image.debian_slim(python_version="3.12"), timeout=12 * 3600)
+def orchestrate():
+    # fan-out runs remotely so --detach keeps ALL jobs alive after the laptop disconnects
+    for r in job.starmap(JOBS): print(r, flush=True)
+
 @app.local_entrypoint()
 def main():
-    for r in job.starmap(JOBS): print(r)
+    orchestrate.remote()
