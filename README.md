@@ -264,6 +264,15 @@ Router purity against ground-truth register ids (fraction of each register's tok
 Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q9 61.5 ± 2.2 vs q6 57.7 ± 0.3; single q9 58.8 ± 1.7 vs q6 57.7 ± 0.3; uniform q9 59.0 ± 1.8 vs q6 57.0 ± 2.0; multi q9 55.4 ± 3.8 vs q6 42.8 ± 13.3; oracle q9 60.1 ± 2.0 vs q6 55.0 ± 4.5.
 <!-- Q7:END -->
 
+## Follow-ups: baselines, capacity, a realistic task, scale
+
+Four checks of whether the private-slot result is an artefact. All use the q9 recipe (random names, `--ret_norm`, occupancy gating) unless noted; tables are in `results/q10_notes.md` to `results/q13_notes.md`.
+
+- **Parameter-matched LoRA (q10, 5 seeds).** Mean accuracy over P=2-16 with about 441k trainable parameters: LoRA after the injection layer 0.394 ± 0.044, `multi` 0.410 ± 0.069, `single` 0.449 ± 0.030, `adapter` 0.458 ± 0.015. LoRA on layers 0-12 stayed at chance on all seeds with the workers' untuned recipe, so no best-LoRA claim is made. The workers do not beat LoRA, and the plain adapter beats both.
+- **Capacity-limited regime (q11, 3 seeds, P up to 64).** A single recurrent state of width 4 is not capacity-starved even at 64 registers, and `multi` does not beat equal-width `single` (P=64: 15 vs 20 at d_s=4, 17 vs 19 at 16, 23 vs 17 at 64, the last within noise near chance). All cells are optimisation-limited, not capacity-limited. Longer ops-per-register curricula did not break the long-chain wall.
+- **Realistic interleaved task (q12, 2-4 seeds).** Entities with balances updated in natural-language sentences. Frozen Qwen is at chance (6-16%), every trained mode reaches at least 0.88 at P=2-3, and zeroing the return gives 0.14. At P=12: `single` 0.53, `uniform` 0.51, `adapter` 0.43, `multi` 0.39, `oracle` 0.33. The router reaches 0.96-0.97 purity without an accuracy gain.
+- **Depth and scale (q13, 2-3 seeds).** Injection depth matters more than mode: layers 4 and 12 work, 18 degrades, 24 is near chance. Scale helps a lot (`adapter` at P=4: 54%, 58%, 72% for Qwen3-0.6B, 1.7B, 4B). The mode ordering does not change, and `multi` falls further behind at 4B (P=16: 30% vs 46.5% `single` and 56% `adapter`).
+
 ## What we know / what we do not
 
 **Established by the data in `results/`:**
@@ -277,7 +286,7 @@ Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q9 61.5 
 
 **Not established:**
 - That routing or private working memory (the "subagent" claim) helps. On this task it does not, at this scale.
-- Anything beyond one model (Qwen3-0.6B), one injection layer and one task family. The combination (`subset`) task is not solved.
+- A best-tuned LoRA comparison (no learning-rate sweep was run), more than 2-4 seeds per cell in the follow-ups, and anything beyond the register and ledger task families. The combination (`subset`) task is not solved.
 
 ## What we tried (timeline)
 
