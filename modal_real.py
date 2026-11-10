@@ -22,6 +22,7 @@ def job(task, mode, seed):
 MODES = ["none", "adapter", "single", "uniform", "multi", "oracle"]
 BATCHES = {"pilot": [("ledger", m, 0) for m in ("none", "adapter", "multi")],
            "ledger": [("ledger", m, s) for m in MODES for s in range(4) if not (m in ("none", "adapter", "multi") and s == 0)],
+           "trim": [("ledger", m, s) for m, ss in (("single", (0, 1, 2)), ("oracle", (0, 1)), ("uniform", (0, 1)), ("multi", (1, 2)), ("adapter", (1, 2))) for s in ss],  # budget-trimmed ladder
            "files": [("files", m, s) for m in MODES for s in range(2)]}
 
 @app.local_entrypoint()
