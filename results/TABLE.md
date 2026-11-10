@@ -86,7 +86,7 @@ Slot count K changed at test time (trained at K=4), accuracy %:
 
 ## q7: learned binding
 
-**q7: learned binding** (task `query`, random register names in train and eval). _Final: 19 runs over 5 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
+**q7: learned binding** (task `query`, random register names in train and eval). _Final: 25 runs over 5 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
 
 **q7 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
 
@@ -94,9 +94,9 @@ Slot count K changed at test time (trained at K=4), accuracy %:
 |---|---|---|---|---|---|---|---|---|---|
 | adapter | 5 | 507,873 | 60.1 ± 1.7 | 56.9 ± 2.1 | 52.6 ± 2.2 | 47.6 ± 2.3 | 41.7 ± 1.7 | 34.0 ± 3.0 | 27.8 ± 2.0 |
 | single | 5 | 441,281 | 60.9 ± 2.2 | 57.6 ± 1.8 | 53.4 ± 1.3 | 45.0 ± 1.4 | 38.3 ± 3.6 | 34.0 ± 4.0 | 23.4 ± 3.0 |
-| uniform | 2 | 441,281 | 58.2 ± 1.3 | 56.0 ± 0.5 | 51.8 ± 2.8 | 26.0 ± 2.0 | 12.2 ± 0.3 | 10.8 ± 0.3 | 10.8 ± 0.8 |
+| uniform | 5 | 441,281 | 59.0 ± 1.5 | 56.5 ± 0.9 | 51.1 ± 2.7 | 25.7 ± 2.8 | 12.6 ± 1.0 | 12.5 ± 1.6 | 11.3 ± 1.2 |
 | multi | 5 | 441,281 | 51.3 ± 10.7 | 45.7 ± 10.2 | 46.0 ± 10.4 | 35.9 ± 9.0 | 36.2 ± 8.1 | 33.0 ± 7.6 | 26.3 ± 6.5 |
-| oracle | 2 | 441,281 | 51.5 ± 3.5 | 49.0 ± 0.5 | 40.5 ± 1.0 | 18.2 ± 8.8 | 13.8 ± 0.3 | 12.0 ± 1.0 | 11.5 ± 1.0 |
+| oracle | 5 | 441,281 | 54.4 ± 3.6 | 50.6 ± 2.1 | 41.4 ± 1.6 | 19.6 ± 6.3 | 10.8 ± 2.4 | 11.8 ± 1.2 | 10.7 ± 2.0 |
 
 Intervention ablations at P4 (accuracy %, mean ± std; `P4_long` = more ops per register):
 
@@ -104,9 +104,9 @@ Intervention ablations at P4 (accuracy %, mean ± std; `P4_long` = more ops per 
 |---|---|---|---|---|---|
 | adapter | 52.6 ± 2.2 | 13.0 ± 0.0 | 10.0 ± 1.5 | n/a | 12.2 ± 0.9 |
 | single | 53.4 ± 1.3 | 13.0 ± 0.0 | 14.0 ± 2.1 | 13.0 ± 0.0 | 12.5 ± 2.0 |
-| uniform | 51.8 ± 2.8 | 13.0 ± 0.0 | 12.8 ± 2.2 | 53.0 ± 0.5 | 13.2 ± 1.2 |
+| uniform | 51.1 ± 2.7 | 12.9 ± 0.2 | 13.7 ± 2.1 | 51.2 ± 1.8 | 10.5 ± 2.6 |
 | multi | 46.0 ± 10.4 | 13.0 ± 0.0 | 24.2 ± 8.4 | 41.4 ± 10.1 | 9.1 ± 1.8 |
-| oracle | 40.5 ± 1.0 | 13.0 ± 0.0 | 14.3 ± 0.7 | 38.2 ± 1.8 | 11.2 ± 0.3 |
+| oracle | 41.4 ± 1.6 | 12.7 ± 0.2 | 12.5 ± 1.5 | 36.6 ± 2.5 | 11.3 ± 0.7 |
 
 Router purity against ground-truth register ids (fraction of each register's tokens sent to its best slot; per seed). `uniform` and `oracle` read 100% by construction and are not shown.
 
@@ -114,31 +114,36 @@ Router purity against ground-truth register ids (fraction of each register's tok
 |---|---|---|
 | multi | 100%, 98%, 97%, 99%, 93% (seeds in order) | 100%, 99%, 97%, 100%, 91% (seeds in order) |
 
-Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 60.1 ± 1.7 vs q6 57.7 ± 0.3; single q7 60.9 ± 2.2 vs q6 57.7 ± 0.3; uniform q7 58.2 ± 1.3 vs q6 57.0 ± 2.0; multi q7 51.3 ± 10.7 vs q6 42.8 ± 13.3; oracle q7 51.5 ± 3.5 vs q6 55.0 ± 4.5.
-**q9: learned binding** (task `query`, random register names in train and eval). _Final: 6 runs over 3 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
+Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q7 60.1 ± 1.7 vs q6 57.7 ± 0.3; single q7 60.9 ± 2.2 vs q6 57.7 ± 0.3; uniform q7 59.0 ± 1.5 vs q6 57.0 ± 2.0; multi q7 51.3 ± 10.7 vs q6 42.8 ± 13.3; oracle q7 54.4 ± 3.6 vs q6 55.0 ± 4.5.
+**q9: learned binding** (task `query`, random register names in train and eval). _Final: 25 runs over 5 modes; the n-seeds column gives seeds per row, rows with fewer seeds have wide uncertainty._
 
 **q9 (learned binding)**: task `query`, trained on P in {2,3}, 8000 steps, K=4, layer 12, occupancy gating on, register names randomised in train and eval; accuracy in %, mean ± std (population std) over n seeds; chance = 10%.
 
 | mode | n seeds | trainable params | P=2 | P=3 | P=4 | P=6 | P=8 | P=12 | P=16 |
 |---|---|---|---|---|---|---|---|---|---|
-| uniform | 2 | 441,281 | 60.0 ± 0.0 | 57.7 ± 0.3 | 50.8 ± 3.3 | 41.8 ± 0.3 | 35.8 ± 0.8 | 35.2 ± 0.3 | 24.0 ± 5.5 |
-| multi | 2 | 441,281 | 52.8 ± 4.7 | 47.8 ± 4.3 | 47.8 ± 2.7 | 38.0 ± 6.5 | 33.2 ± 13.2 | 28.5 ± 17.5 | 22.7 ± 12.2 |
-| oracle | 2 | 441,281 | 61.0 ± 0.0 | 53.5 ± 3.0 | 51.2 ± 2.3 | 38.0 ± 1.5 | 37.0 ± 1.0 | 30.0 ± 3.5 | 19.0 ± 2.5 |
+| adapter | 5 | 507,873 | 61.5 ± 2.2 | 58.0 ± 1.3 | 54.1 ± 2.1 | 47.3 ± 1.6 | 39.3 ± 2.7 | 31.8 ± 5.1 | 28.4 ± 3.5 |
+| single | 5 | 441,281 | 58.8 ± 1.7 | 58.0 ± 3.2 | 51.4 ± 2.6 | 44.3 ± 3.2 | 38.7 ± 4.7 | 35.9 ± 6.9 | 27.3 ± 4.2 |
+| uniform | 5 | 441,281 | 59.0 ± 1.8 | 59.0 ± 1.9 | 49.1 ± 3.4 | 44.2 ± 2.7 | 35.5 ± 2.6 | 33.2 ± 3.2 | 25.2 ± 4.6 |
+| multi | 5 | 441,281 | 55.4 ± 3.8 | 51.6 ± 4.6 | 49.2 ± 3.2 | 39.2 ± 7.0 | 34.8 ± 8.7 | 31.2 ± 11.7 | 25.6 ± 8.2 |
+| oracle | 5 | 441,281 | 60.1 ± 2.0 | 54.1 ± 2.1 | 50.3 ± 1.9 | 37.4 ± 2.6 | 34.1 ± 4.3 | 26.3 ± 4.2 | 19.6 ± 3.3 |
 
 Intervention ablations at P4 (accuracy %, mean ± std; `P4_long` = more ops per register):
 
 | mode | intact | zero return | shuffle across batch | drop slot 0 | more ops / register |
 |---|---|---|---|---|---|
-| uniform | 50.8 ± 3.3 | 13.0 ± 0.0 | 13.5 ± 0.5 | 51.8 ± 3.8 | 9.0 ± 1.0 |
-| multi | 47.8 ± 2.7 | 13.0 ± 0.0 | 22.5 ± 5.5 | 30.2 ± 19.2 | 9.8 ± 0.3 |
-| oracle | 51.2 ± 2.3 | 13.0 ± 0.0 | 15.2 ± 0.3 | 37.8 ± 1.3 | 12.0 ± 1.0 |
+| adapter | 54.1 ± 2.1 | 12.7 ± 0.2 | 11.6 ± 1.9 | n/a | 12.5 ± 1.0 |
+| single | 51.4 ± 2.6 | 12.6 ± 0.2 | 13.6 ± 2.9 | 12.6 ± 0.2 | 12.1 ± 2.2 |
+| uniform | 49.1 ± 3.4 | 12.9 ± 0.2 | 12.8 ± 0.7 | 50.4 ± 3.6 | 11.0 ± 1.8 |
+| multi | 49.2 ± 3.2 | 12.9 ± 0.2 | 19.6 ± 4.3 | 33.3 ± 15.1 | 11.1 ± 1.3 |
+| oracle | 50.3 ± 1.9 | 12.7 ± 0.2 | 14.4 ± 1.0 | 39.8 ± 3.8 | 12.6 ± 1.2 |
 
 Router purity against ground-truth register ids (fraction of each register's tokens sent to its best slot; per seed). `uniform` and `oracle` read 100% by construction and are not shown.
 
 | mode | purity at P=4 | purity at P=8 |
 |---|---|---|
-| multi | 100%, 54% (seeds in order) | 100%, 46% (seeds in order) |
+| multi | 100%, 54%, 100%, 93%, 95% (seeds in order) | 100%, 46%, 100%, 97%, 96% (seeds in order) |
 
+Same-P comparison with the fixed-name run `q6` at P=2 (mean %): adapter q9 61.5 ± 2.2 vs q6 57.7 ± 0.3; single q9 58.8 ± 1.7 vs q6 57.7 ± 0.3; uniform q9 59.0 ± 1.8 vs q6 57.0 ± 2.0; multi q9 55.4 ± 3.8 vs q6 42.8 ± 13.3; oracle q9 60.1 ± 2.0 vs q6 55.0 ± 4.5.
 
 ## Timeline
 
@@ -148,9 +153,9 @@ Router purity against ground-truth register ids (fraction of each register's tok
 | q4 | subset | 8 | 4000 | 2,3,4 | no | 2 x 1 | 12.0 ± 0.0 | 11.0 ± 0.0 | - | - | Curriculum `query` -> `subset`: stayed at chance, even for the adapter. Task abandoned. |
 | q5 | query | 8 | 6000 | 2,3 | no | 7 x 2 | 56.2 ± 1.2 | 58.5 ± 1.5 | 20, 20 | 30.8 ± 12.8 | Task `query`, K=8, no occupancy gating: slot modes under-trained (near chance) while adapter and single learned. |
 | q6 | query | 4 | 8000 | 2,3 | yes | 6 x 2 | 57.7 ± 0.3 | 57.7 ± 0.3 | 56, 30 | 55.0 ± 4.5 | Occupancy-gated returns, K=4, 8000 steps, 2 seeds, all rungs: headline run (see above). |
-| q7 | query | 4 | 8000 | 2,3 | yes | 5 x 5 | 60.1 ± 1.7 | 60.9 ± 2.2 | 54, 62, 60, 49, 32 | 51.5 ± 3.5 | Random register names in train and eval (learned binding). Generalises to 16 registers for adapter, single and multi (5 seeds); private slots do not beat the shared state or the stateless adapter. |
-| q8 | permn | 4 | 4000 | 3,4 | yes | 2 x 2 | 38.8 ± 1.3 | 39.5 ± 2.0 | - | - |  |
-| q9 | query | 4 | 8000 | 2,3 | yes | 3 x 2 | - | - | 57, 48 | 61.0 ± 0.0 |  |
+| q7 | query | 4 | 8000 | 2,3 | yes | 5 x 5 | 60.1 ± 1.7 | 60.9 ± 2.2 | 54, 62, 60, 49, 32 | 54.4 ± 3.6 | Random register names in train and eval (learned binding). Generalises to 16 registers for adapter, single and multi (5 seeds); private slots do not beat the shared state or the stateless adapter. |
+| q8 | permn | 4 | 4000 | 3,4 | yes | 4 x 3 | 37.8 ± 1.6 | 38.7 ± 2.0 | 36, 40, 38 | 37.8 ± 2.0 |  |
+| q9 | query | 4 | 8000 | 2,3 | yes | 5 x 5 | 61.5 ± 2.2 | 58.8 ± 1.7 | 57, 48, 58, 58, 56 | 60.1 ± 2.0 |  |
 
 Not in the table: `q1`: Smoke test, single seed, easy task. `q3`: Task `subset` (sum of three queried registers), K=8, from scratch: never left chance. Results were not kept in the repo.
 
