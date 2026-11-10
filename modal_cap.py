@@ -7,7 +7,7 @@ vol = modal.Volume.from_name("qwenagent-cap-res", create_if_missing=True)
 img = (modal.Image.debian_slim(python_version="3.12").pip_install("torch", "transformers", "numpy", "accelerate")
        .add_local_dir(".", "/app", ignore=["ckpt", "logs", "results", "traces", "figures", "viz", "__pycache__", ".git"]))
 
-@app.function(image=img, gpu=["A10G", "L4"], cpu=4.0, memory=16384, timeout=6 * 3600, volumes={"/res": vol})
+@app.function(image=img, gpu=["A10G", "L4", "L40S"], cpu=4.0, timeout=6 * 3600, volumes={"/res": vol})
 def cell(name, seeds):
     os.makedirs("/root/venv-baseline/bin", exist_ok=True)
     py = "/root/venv-baseline/bin/python"
