@@ -34,6 +34,8 @@ BATCHES = {
   "layers": ("small", [(m, s, B06, l) for l in (4, 8, 18, 24) for m in ("adapter", "single", "multi") for s in range(3)]),
   "s17": ("small", [(m, s, B17, 12) for m in ("none", "adapter", "single", "multi") for s in range(3)]),
   "s4": ("big", [(m, s, B4, 15) for m in ("none", "adapter", "single", "multi") for s in range(2)]),
+  # budget-trimmed 4B set (1 seed none/multi, 2 seeds adapter/single)
+  "s4lite": ("big", [("none", 0, B4, 15), ("multi", 0, B4, 15)] + [(m, s, B4, 15) for m in ("adapter", "single") for s in range(2)]),
 }
 
 @app.local_entrypoint()
