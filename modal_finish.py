@@ -6,7 +6,7 @@ vol = modal.Volume.from_name("qwenagent-res", create_if_missing=True)
 img = (modal.Image.debian_slim(python_version="3.12").pip_install("torch", "transformers", "numpy", "accelerate")
        .add_local_dir(".", "/app", ignore=["ckpt", "logs", "results", "traces", "figures", "viz", "__pycache__", ".git"]))
 
-@app.function(image=img, gpu="A10G", timeout=4 * 3600, volumes={"/res": vol}, retries=1)
+@app.function(image=img, gpu=["A10G", "L4", "L40S", "A100"], timeout=4 * 3600, volumes={"/res": vol}, retries=1)
 def job(script, mode, seed):
     os.makedirs("/root/venv-baseline/bin", exist_ok=True)
     py = "/root/venv-baseline/bin/python"
