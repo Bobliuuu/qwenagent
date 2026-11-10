@@ -36,6 +36,8 @@ BATCHES = {
   # 1.7B remainder, seed-major so partial completion stays balanced (GPU cap was shared with other tracks)
   "s17b": ("small", [("single", 0, B17, 12), ("multi", 0, B17, 12), ("adapter", 1, B17, 12), ("single", 1, B17, 12), ("multi", 1, B17, 12),
                      ("adapter", 2, B17, 12), ("single", 2, B17, 12), ("multi", 2, B17, 12)]),
+  # 4B extra seeds (4B proved faster than expected): multi s1, then seed 2 of adapter/single/multi
+  "s4x": ("big", [("multi", 1, B4, 15)] + [(m, 2, B4, 15) for m in ("adapter", "single", "multi")]),
   "s4": ("big", [(m, s, B4, 15) for m in ("none", "adapter", "single", "multi") for s in range(2)]),
   # budget-trimmed 4B set (1 seed none/multi, 2 seeds adapter/single)
   "s4lite": ("big", [("none", 0, B4, 15), ("multi", 0, B4, 15)] + [(m, s, B4, 15) for m in ("adapter", "single") for s in range(2)]),
