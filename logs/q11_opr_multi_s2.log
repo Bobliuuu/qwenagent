@@ -1,46 +1,35 @@
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 5687.70it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7557.48it/s]
 mode multi trainable params 441281
-200 0.897 0.3 58
-400 1.34 0.32 116
-600 0.51 0.34 175
-800 0.476 0.26 235
-1000 1.084 0.37 319
-1200 1.025 0.37 404
-1400 0.652 0.41 489
-1600 0.954 0.37 573
-1800 1.35 0.36 705
-2000 1.886 0.34 840
-2200 1.581 0.35 973
-2400 1.851 0.43 1106
-2600 1.84 0.44 1239
-2800 1.276 0.44 1372
-Traceback (most recent call last):
-  File "/app/train.py", line 111, in <module>
-    loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
-                           ^^^^^^^^^^^
-  File "/app/train.py", line 69, in run
-    return lm(**enc).logits[:, -1, :][:, digit_ids].float()
-           ^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/transformers/utils/generic.py", line 943, in wrapper
-    output = func(self, *args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 481, in forward
-    logits = self.lm_head(hidden_states)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
-    return F.linear(input, self.weight, self.bias)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.12 GiB. GPU 0 has a total capacity of 22.06 GiB of which 848.12 MiB is free. Process 1 has 21.21 GiB memory in use. Process 1 has 21.21 GiB memory in use. Process 1 has 21.21 GiB memory in use. Of the allocated memory 4.84 GiB is allocated by PyTorch, and 346.31 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+200 1.065 0.25 20
+400 1.208 0.21 38
+600 0.609 0.32 56
+800 0.394 0.34 75
+1000 0.975 0.37 96
+1200 0.959 0.35 119
+1400 0.672 0.39 141
+1600 0.845 0.4 163
+1800 1.283 0.39 192
+2000 2.07 0.4 221
+2200 1.642 0.43 250
+2400 1.908 0.44 280
+2600 1.823 0.4 308
+2800 1.505 0.46 338
+3000 2.206 0.44 386
+3200 2.358 0.43 434
+3400 2.265 0.29 482
+3600 2.185 0.37 529
+3800 2.237 0.33 577
+4000 2.188 0.27 625
+4200 2.221 0.26 668
+4400 2.209 0.33 710
+4600 2.203 0.24 775
+4800 2.222 0.23 845
+5000 2.103 0.26 910
+5200 2.135 0.18 978
+5400 2.11 0.15 1046
+5600 2.18 0.14 1117
+5800 2.097 0.12 1188
+6000 2.121 0.18 1258
+6200 2.171 0.14 1327
+{"P2": 0.16, "P3": 0.155, "P4": 0.16, "P6": 0.165, "purity_P4": 0.8920139728851113, "purity_P8": 0.879313477032227, "P4_long": 0.12, "P4_ops5-6": 0.1, "P4_ops7-12": 0.115, "P4_ops13-24": 0.135, "P4_zero": 0.1, "P4_shuffle": 0.13, "P4_drop:0": 0.155}
