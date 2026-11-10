@@ -1,0 +1,48 @@
+[ledger P=2] ans=6
+hugo starts with 5 . cy starts with 2 . cy receives 3 . cy loses 2 . hugo earns 1 . cy loses 3 . how much does hugo have ? =
+entity id per sentence: [0, 1, 1, 1, 0, 1, -1, -1]
+
+[ledger P=2] ans=9
+otto starts with 7 . omar starts with 2 . omar spends 2 . omar earns 2 . omar deposits 3 . otto earns 2 . how much does otto have ? =
+entity id per sentence: [0, 1, 1, 1, 1, 0, -1, -1]
+
+[ledger P=3] ans=0
+kit starts with 7 . sky starts with 3 . saul starts with 4 . sky withdraws 1 . sky withdraws 2 . sky earns 3 . kit earns 2 . sky withdraws 3 . saul spends 3 . how much does sky have ? =
+entity id per sentence: [1, 0, 2, 0, 0, 0, 1, 0, 2, -1, -1]
+
+[ledger P=3] ans=8
+hugo starts with 3 . rhea starts with 4 . rex starts with 6 . rex receives 3 . hugo deposits 2 . rex loses 1 . rhea loses 3 . rex loses 4 . hugo deposits 3 . how much does hugo have ? =
+entity id per sentence: [1, 2, 0, 0, 1, 0, 2, 0, 1, -1, -1]
+
+[ledger P=6] ans=3
+quin starts with 7 . tam starts with 4 . sky starts with 3 . kit starts with 2 . pia starts with 3 . saul starts with 2 . quin withdraws 1 . saul deposits 1 . sky loses 3 . sky deposits 4 . kit withdraws 1 . tam earns 2 . sky earns 1 . sky spends 1 . sky receives 3 . quin receives 3 . sky withdraws 4 . kit earns 4 . how much does pia have ? =
+entity id per sentence: [3, 4, 0, 2, 1, 5, 3, 5, 0, 0, 2, 4, 0, 0, 0, 3, 0, 2, -1, -1]
+
+[ledger P=6] ans=7
+tess starts with 6 . wil starts with 6 . cy starts with 2 . yan starts with 3 . wes starts with 4 . juno starts with 4 . cy loses 2 . wil receives 3 . wes spends 1 . tess deposits 3 . cy deposits 3 . wes spends 2 . cy earns 3 . tess loses 2 . wil loses 4 . juno withdraws 1 . cy deposits 2 . wes receives 4 . how much does tess have ? =
+entity id per sentence: [5, 2, 4, 0, 1, 3, 4, 2, 1, 5, 4, 1, 4, 5, 2, 3, 4, 1, -1, -1]
+
+[files P=2] ans=5
+io is at version 5 . ui is at version 7 . io bumps 1 versions . io gets 2 new commits . io bumps 1 versions . io reverts 4 commits . what version is io at ? =
+entity id per sentence: [0, 1, 0, 0, 0, 0, -1, -1]
+
+[files P=2] ans=7
+jobs is at version 5 . api is at version 7 . api gets 1 new commits . jobs bumps 2 versions . api reverts 2 commits . api reverts 4 commits . what version is jobs at ? =
+entity id per sentence: [0, 1, 1, 0, 1, 1, -1, -1]
+
+[files P=3] ans=4
+util is at version 4 . kernel is at version 3 . infra is at version 7 . util reverts 3 commits . util bumps 3 versions . kernel drops 1 versions . infra drops 4 versions . kernel reverts 1 commits . kernel reverts 1 commits . what version is util at ? =
+entity id per sentence: [0, 1, 2, 0, 0, 1, 2, 1, 1, -1, -1]
+
+[files P=3] ans=2
+deploy is at version 2 . util is at version 7 . form is at version 4 . util bumps 1 versions . deploy bumps 2 versions . util gets 1 new commits . deploy bumps 1 versions . deploy drops 3 versions . util drops 1 versions . what version is deploy at ? =
+entity id per sentence: [1, 0, 2, 0, 1, 0, 1, 1, 0, -1, -1]
+
+[files P=6] ans=9
+mail is at version 5 . lint is at version 5 . deploy is at version 5 . io is at version 2 . auth is at version 2 . hash is at version 7 . auth gets 1 new commits . auth gets 4 new commits . deploy bumps 3 versions . lint drops 2 versions . deploy gets 1 new commits . lint gets 1 new commits . auth gets 2 new commits . deploy drops 4 versions . hash gets 1 new commits . mail bumps 2 versions . lint gets 2 new commits . mail drops 2 versions . what version is auth at ? =
+entity id per sentence: [4, 3, 0, 1, 5, 2, 5, 5, 0, 3, 0, 3, 5, 0, 2, 4, 3, 4, -1, -1]
+
+[files P=6] ans=4
+sdk is at version 7 . test is at version 7 . mail is at version 6 . json is at version 5 . kernel is at version 5 . deploy is at version 3 . test bumps 1 versions . deploy drops 2 versions . mail reverts 4 commits . json reverts 1 commits . kernel gets 3 new commits . sdk gets 1 new commits . mail bumps 3 versions . deploy reverts 1 commits . mail bumps 2 versions . deploy bumps 4 versions . sdk reverts 2 commits . mail drops 2 versions . what version is deploy at ? =
+entity id per sentence: [3, 2, 5, 0, 1, 4, 2, 4, 5, 0, 1, 3, 5, 4, 5, 4, 3, 5, -1, -1]
+
