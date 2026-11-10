@@ -101,3 +101,41 @@ def matched_adapter_width(d_model, K, d_s):
         if nparams(Workers(d_model, K, d_s, "adapter", single_width=mid)) < target: lo = mid + 1
         else: hi = mid
     return lo
+
+
+class LoRABank(nn.Module):
+    """Hand-rolled LoRA on q/k/v/o of selected decoder layers. Params fp32; delta = scale * (x A^T) B^T added to the frozen linear's output."""
+    def __init__(s, specs, scale):
+        super().__init__()
+        s.scale = scale; s.A = nn.ParameterList(); s.B = nn.ParameterList()
+        for (din, dout, r) in specs:
+            A = torch.empty(r, din); nn.init.kaiming_uniform_(A, a=5 ** 0.5)
+            s.A.append(nn.Parameter(A)); s.B.append(nn.Parameter(torch.zeros(dout, r)))
+
+def attach_lora(lm, layer, place, target, alpha, dev):
+    """Rank matching: per-layer uniform base rank r (largest with params <= target), then r+1 on as many
+    layers as keep total closest to target. Returns the LoRABank (hooks registered on the frozen linears)."""
+    n = len(lm.model.layers)
+    idx = list(range(0, layer + 1)) if place == "pre" else list(range(layer + 1, n))
+    def mods(i):
+        at = lm.model.layers[i].self_attn
+        return [at.q_proj, at.k_proj, at.v_proj, at.o_proj]
+    per = [sum(m.in_features + m.out_features for m in mods(i)) for i in idx]   # params per unit rank, per layer
+    r0 = max(1, int(target // sum(per))); ranks = [r0] * len(idx)
+    best = (abs(sum(per[j] * ranks[j] for j in range(len(idx))) - target), list(ranks))
+    for j in range(len(idx)):
+        ranks[j] += 1
+        tot = sum(per[k] * ranks[k] for k in range(len(idx)))
+        if abs(tot - target) < best[0]: best = (abs(tot - target), list(ranks))
+    ranks = best[1]
+    specs = [(m.in_features, m.out_features, ranks[j]) for j, i in enumerate(idx) for m in mods(i)]
+    bank = LoRABank(specs, alpha).to(dev)
+    c = 0
+    for j, i in enumerate(idx):
+        for m in mods(i):
+            def hook(mod, inp, out, c=c):
+                x = inp[0].float()
+                return out + (bank.scale * (x @ bank.A[c].t() @ bank.B[c].t())).to(out.dtype)
+            m.register_forward_hook(hook); c += 1
+    print("lora place", place, "layers", idx[0], "-", idx[-1], "ranks", sorted(set(ranks)), "params", sum(p.numel() for p in bank.parameters()), "target", target, flush=True)
+    return bank
