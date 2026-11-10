@@ -24,9 +24,39 @@ def make_permn(P, n_swaps, rng=random):
     q = rng.randrange(P); words += [("|", -1), (f"{NAMES[q]}?", -1), ("=", -1)]
     return words, cur[q]
 
+# ---- realistic interleaved-entity-state tasks (q12). Natural-language-ish, non-modular, answer = digit 0-9 ----
+ENT_NAMES = ("mira bo ana juno kai lena omar pia ravi sol tess uri vera wil xena yuri zed ola "
+             "nina otto rhea saul tomas ines hugo dara eli fay gus ida jax kit lou max neo "
+             "oz pru quin rex sky tam una val wes yan zoe abe bea cy dot").split()
+FILE_NAMES = ("api db ui auth cache cli docs infra jobs log mail net orm perf queue sdk test util web "
+              "build core deploy edge form graph hash io json kernel lint math nav").split()
+
+def make_ledger(P, n_ops, rng=random, files=False):
+    """P entities (random names) each with a small integer state (0-9, no wraparound), updates interleaved in one text.
+    ledger: 'mira starts with 5 .' 'bo deposits 2 .' 'ana withdraws 3 .'  query 'how much does mira have ?'
+    files:  'api is at version 5 .' 'db gets 2 new commits .' 'ui reverts 3 commits .' query 'what version is api at ?'"""
+    names = rng.sample(FILE_NAMES if files else ENT_NAMES, P)
+    val = [rng.randrange(2, 8) for _ in range(P)]
+    order = list(range(P)); rng.shuffle(order)
+    words = [((f"{names[i]} is at version {val[i]} ." if files else f"{names[i]} starts with {val[i]} ."), i) for i in order]
+    up = ("gets {d} new commits", "bumps {d} versions") if files else ("deposits {d}", "receives {d}", "earns {d}")
+    dn = ("reverts {d} commits", "drops {d} versions") if files else ("withdraws {d}", "spends {d}", "loses {d}")
+    for _ in range(n_ops):
+        i = rng.randrange(P); v = val[i]
+        can_up, can_dn = v < 9, v > 0
+        if can_up and (not can_dn or rng.random() < 0.5):
+            d = rng.randrange(1, min(4, 9 - v) + 1); val[i] += d; t = rng.choice(up)
+        else:
+            d = rng.randrange(1, min(4, v) + 1); val[i] -= d; t = rng.choice(dn)
+        words.append((f"{names[i]} {t.format(d=d)} .", i))
+    q = rng.randrange(P)
+    words.append((f"what version is {names[q]} at ?" if files else f"how much does {names[q]} have ?", -1))
+    words.append(("=", -1))
+    return words, val[q]
+
 def make(P, n_ops, mode="query", rng=random, rename=False, shuffle_init=False):
-    if mode == "perm": return make_perm(P, n_ops, rng)
-    if mode == "permn": return make_permn(P, n_ops, rng)
+    if mode == "ledger": return make_ledger(P, n_ops, rng)
+    if mode == "files": return make_ledger(P, n_ops, rng, files=True)
     names = NAMES if not rename else "".join(rng.sample("abcdefghijklmnopqrstuvwxyz", 16))
     if mode == "perm": return make_perm(P, n_ops, rng)
     if mode == "permn": return make_permn(P, n_ops, rng)
