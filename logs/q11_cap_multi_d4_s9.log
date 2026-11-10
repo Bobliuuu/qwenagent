@@ -1,0 +1,5 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7477.81it/s]
+mode multi trainable params 88661
+200 2.305 0.15 44
+{"P2": 0.4, "P3": 0.3, "P4": 0.5, "P8": 0.2, "P16": 0.4, "P32": 0.1, "P64": 0.2, "purity_P4": 0.6221300110178829, "purity_P8": 0.4757062515031265, "P4_long": 0.7, "P4_ops5-6": 0.0, "P4_ops7-12": 0.6, "P4_ops13-24": 0.2, "P4_zero": 0.3, "P4_shuffle": 0.6, "P4_drop:0": 0.4}

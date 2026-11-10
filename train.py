@@ -22,6 +22,8 @@ ap.add_argument("--opr_curriculum", default="", help="e.g. 1,1:1500;1,2:1500;2,4
 ap.add_argument("--lora_place", default="pre", help="lora: pre = layers 0..--layer ; post = layers --layer+1..end")
 ap.add_argument("--lora_target", type=int, default=441281, help="lora: trainable-param budget (multi's count)")
 ap.add_argument("--lora_alpha", type=float, default=2.0, help="lora scale (fixed multiplier on B@A)")
+ap.add_argument("--single_width", type=int, default=0, help="q11: explicit width for single (state) / adapter (hidden/4); 0 = default. Use with --match_params 0")
+ap.add_argument("--long_names", type=int, default=0, help="q11: random distinct 2-letter register names (needed for P>16); implies --rename 1")
 ap.add_argument("--n_eval", type=int, default=200)
 ap.add_argument("--out", default="results/run.json"); ap.add_argument("--save", default="")
 ap.add_argument("--init", default="", help="warm-start worker weights from a ckpt (stage-2 fine-tune)")
@@ -36,7 +38,7 @@ digit_ids = [tok.encode(str(i), add_special_tokens=False)[0] for i in range(10)]
 dm = lm.config.hidden_size
 W = None
 if a.mode not in ("none", "lora"):
-    sw = None
+    sw = a.single_width or None
     if a.match_params and a.mode == "single": sw = wk.matched_single_width(dm, a.K, a.d_s)
     if a.match_params and a.mode == "adapter": sw = wk.matched_adapter_width(dm, a.K, a.d_s)
     W = wk.Workers(dm, a.K, a.d_s, a.mode, single_width=sw, occ_gate=bool(a.occ), ret_norm=bool(a.ret_norm)).to(dev)
@@ -74,13 +76,14 @@ def run(xs, spans=None, Kmin=1):
     return lm(**enc).logits[:, -1, :][:, digit_ids].float()
 
 KW = dict(rename=True, shuffle_init=True) if a.rename else {}
+if a.long_names: KW = dict(rename=True, shuffle_init=True, long_names=True)
 opr = tuple(map(int, a.opr.split(","))); trP = [int(x) for x in a.train_P.split(",")]
 teP = [int(x) for x in a.test_P.split(",")]
 
 @torch.no_grad()
 def evaluate(P, n, opr_, ablate=None, tname=None):
     if W: W.ablate = ablate
-    rng = random.Random(4321 + P); c = 0; bs = 25
+    rng = random.Random(4321 + P); c = 0; bs = 25 if P <= 16 else 5  # q11: small batch for long sequences; P<=16 unchanged
     for i in range(0, n, bs):
         xs, ys, sp = task.batch(bs, [P], opr_, tname or a.task, rng, **KW)
         c += (run(xs, sp, Kmin=P).argmax(-1).cpu() == torch.tensor(ys)).sum().item()

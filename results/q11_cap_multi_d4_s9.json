@@ -1,0 +1,57 @@
+{
+ "args": {
+  "mode": "multi",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 12,
+  "K": 4,
+  "d_s": 4,
+  "occ": 1,
+  "ret_norm": 1,
+  "match_params": 0,
+  "task": "query",
+  "curriculum": "",
+  "train_P": "2,3",
+  "test_P": "2,3,4,8,16,32,64",
+  "opr": "2,4",
+  "steps": 200,
+  "bs": 32,
+  "lr": 0.001,
+  "seed": 9,
+  "rename": 1,
+  "opr_curriculum": "",
+  "single_width": 0,
+  "long_names": 1,
+  "n_eval": 10,
+  "out": "results/q11_cap_multi_d4_s9.json",
+  "save": "",
+  "init": "",
+  "trace": "",
+  "device": "cuda"
+ },
+ "params": 88661,
+ "log": [
+  [
+   200,
+   2.3048627376556396,
+   0.15
+  ]
+ ],
+ "final": {
+  "P2": 0.4,
+  "P3": 0.3,
+  "P4": 0.5,
+  "P8": 0.2,
+  "P16": 0.4,
+  "P32": 0.1,
+  "P64": 0.2,
+  "purity_P4": 0.6221300110178829,
+  "purity_P8": 0.4757062515031265,
+  "P4_long": 0.7,
+  "P4_ops5-6": 0.0,
+  "P4_ops7-12": 0.6,
+  "P4_ops13-24": 0.2,
+  "P4_zero": 0.3,
+  "P4_shuffle": 0.6,
+  "P4_drop:0": 0.4
+ }
+}

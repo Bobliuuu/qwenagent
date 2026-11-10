@@ -3,6 +3,7 @@ Modes: 'query' value of one register | 'sum' sum of all finals | 'subset' sum of
 make() also returns word-level register ids (for oracle routing / visualization)."""
 import random
 NAMES = "abcdefghijklmnop"
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
 
 def make_perm(P, n_swaps, rng=random):
     """pure state tracking: P distinct digits in positions 1..P, n_swaps swaps 'sIJ', answer = digit at queried position"""
@@ -54,10 +55,12 @@ def make_ledger(P, n_ops, rng=random, files=False):
     words.append(("=", -1))
     return words, val[q]
 
-def make(P, n_ops, mode="query", rng=random, rename=False, shuffle_init=False):
+def make(P, n_ops, mode="query", rng=random, rename=False, shuffle_init=False, long_names=False):
     if mode == "ledger": return make_ledger(P, n_ops, rng)
     if mode == "files": return make_ledger(P, n_ops, rng, files=True)
     names = NAMES if not rename else "".join(rng.sample("abcdefghijklmnopqrstuvwxyz", 16))
+    if long_names:   # q11: random distinct 2-letter names (676 available) so P can go to 64+; same length at train and test
+        names = rng.sample([x + y for x in LETTERS for y in LETTERS], max(P, 1))
     if mode == "perm": return make_perm(P, n_ops, rng)
     if mode == "permn": return make_permn(P, n_ops, rng)
     init = [rng.randrange(10) for _ in range(P)]
