@@ -33,6 +33,9 @@ B06, B17, B4 = "Qwen/Qwen3-0.6B", "Qwen/Qwen3-1.7B", "Qwen/Qwen3-4B"
 BATCHES = {
   "layers": ("small", [(m, s, B06, l) for l in (4, 8, 18, 24) for m in ("adapter", "single", "multi") for s in range(3)]),
   "s17": ("small", [(m, s, B17, 12) for m in ("none", "adapter", "single", "multi") for s in range(3)]),
+  # 1.7B remainder, seed-major so partial completion stays balanced (GPU cap was shared with other tracks)
+  "s17b": ("small", [("single", 0, B17, 12), ("multi", 0, B17, 12), ("adapter", 1, B17, 12), ("single", 1, B17, 12), ("multi", 1, B17, 12),
+                     ("adapter", 2, B17, 12), ("single", 2, B17, 12), ("multi", 2, B17, 12)]),
   "s4": ("big", [(m, s, B4, 15) for m in ("none", "adapter", "single", "multi") for s in range(2)]),
   # budget-trimmed 4B set (1 seed none/multi, 2 seeds adapter/single)
   "s4lite": ("big", [("none", 0, B4, 15), ("multi", 0, B4, 15)] + [(m, s, B4, 15) for m in ("adapter", "single") for s in range(2)]),
