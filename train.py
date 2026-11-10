@@ -4,7 +4,7 @@ import worker as wk
 import task
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--mode", default="multi")          # multi|multi_rr|oracle|uniform|single|adapter|none
+ap.add_argument("--mode", default="multi")          # multi|multi_rr|oracle|uniform|single|adapter|none|lora
 ap.add_argument("--model", default="Qwen/Qwen3-0.6B")
 ap.add_argument("--layer", type=int, default=12)
 ap.add_argument("--K", type=int, default=8); ap.add_argument("--d_s", type=int, default=64)
@@ -19,6 +19,9 @@ ap.add_argument("--steps", type=int, default=4000); ap.add_argument("--bs", type
 ap.add_argument("--lr", type=float, default=1e-3); ap.add_argument("--seed", type=int, default=0)
 ap.add_argument("--rename", type=int, default=0, help="random register letters + shuffled init order in training and eval")
 ap.add_argument("--opr_curriculum", default="", help="e.g. 1,1:1500;1,2:1500;2,4:5000 = (lo,hi) ops-per-register phases:steps (overrides --steps)")
+ap.add_argument("--lora_place", default="pre", help="lora: pre = layers 0..--layer ; post = layers --layer+1..end")
+ap.add_argument("--lora_target", type=int, default=441281, help="lora: trainable-param budget (multi's count)")
+ap.add_argument("--lora_alpha", type=float, default=2.0, help="lora scale (fixed multiplier on B@A)")
 ap.add_argument("--n_eval", type=int, default=200)
 ap.add_argument("--out", default="results/run.json"); ap.add_argument("--save", default="")
 ap.add_argument("--init", default="", help="warm-start worker weights from a ckpt (stage-2 fine-tune)")
@@ -32,7 +35,7 @@ for p in lm.parameters(): p.requires_grad_(False)
 digit_ids = [tok.encode(str(i), add_special_tokens=False)[0] for i in range(10)]
 dm = lm.config.hidden_size
 W = None
-if a.mode != "none":
+if a.mode not in ("none", "lora"):
     sw = None
     if a.match_params and a.mode == "single": sw = wk.matched_single_width(dm, a.K, a.d_s)
     if a.match_params and a.mode == "adapter": sw = wk.matched_adapter_width(dm, a.K, a.d_s)
@@ -44,7 +47,11 @@ if a.mode != "none":
         return (h + d,) + tuple(out[1:]) if isinstance(out, tuple) else h + d
     lm.model.layers[a.layer].register_forward_hook(hook)
 if W and a.init: W.load_state_dict(torch.load(a.init, map_location=dev)["state"]); print("warm start", a.init, flush=True)
-NP = wk.nparams(W) if W else 0
+LORA = None
+if a.mode == "lora":
+    LORA = wk.attach_lora(lm, a.layer, a.lora_place, a.lora_target, a.lora_alpha, dev)
+TP = list(W.parameters()) if W else (list(LORA.parameters()) if LORA else [])
+NP = sum(p.numel() for p in TP)
 print("mode", a.mode, "trainable params", NP, flush=True)
 
 def reg_tensor(enc, spans):
@@ -93,8 +100,8 @@ def purity(P, n=50):
     return sum(sc) / max(len(sc), 1)
 
 res = {"args": vars(a), "params": NP, "log": []}
-if W:
-    opt = torch.optim.AdamW(W.parameters(), lr=a.lr, weight_decay=0.01); t0 = time.time()
+if TP:
+    opt = torch.optim.AdamW(TP, lr=a.lr, weight_decay=0.01); t0 = time.time()
     phases = [(p.split(":")[0], int(p.split(":")[1])) for p in a.curriculum.split(",")] if a.curriculum else [(a.task, a.steps)]
     sched = [n for n, c in phases for _ in range(c)]; a.task = phases[-1][0]
     oprs = None
@@ -106,13 +113,13 @@ if W:
     for step in range(1, len(sched) + 1):
         xs, ys, sp = task.batch(a.bs, trP, oprs[step - 1] if oprs else opr, sched[step - 1], **KW)
         loss = F.cross_entropy(run(xs, sp), torch.tensor(ys, device=dev))
-        opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(W.parameters(), 1.0); opt.step()
+        opt.zero_grad(); loss.backward(); torch.nn.utils.clip_grad_norm_(TP, 1.0); opt.step()
         if step % 200 == 0:
             acc = evaluate(trP[0], 100, opr, tname=sched[step - 1])
             res["log"].append((step, loss.item(), acc)); print(step, round(loss.item(), 3), acc, round(time.time() - t0), flush=True)
     if a.save:
         os.makedirs(os.path.dirname(a.save) or ".", exist_ok=True)
-        torch.save({"state": W.state_dict(), "args": vars(a)}, a.save)
+        torch.save({"state": (W or LORA).state_dict(), "args": vars(a)}, a.save)
 final = {}
 for P in teP:
     final[f"P{P}"] = evaluate(P, a.n_eval, opr)
