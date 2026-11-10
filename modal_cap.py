@@ -38,4 +38,5 @@ BATCHES = {
 
 @app.local_entrypoint()
 def main(batch: str = "smoke"):
-    for r in cell.starmap(BATCHES[batch]): print(r)
+    # spawn (not starmap) so every cell survives `modal run --detach` after this process exits; results land in the volume
+    for n, s in BATCHES[batch]: print(n, cell.spawn(n, s).object_id)
