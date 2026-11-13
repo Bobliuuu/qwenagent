@@ -1,0 +1,168 @@
+1
+00:00:00,400 --> 00:00:00,959
+qwenagent.
+
+2
+00:00:00,959 --> 00:00:05,263
+Can subagent like modules live inside a single forward pass of a frozen Qwen?
+
+3
+00:00:05,263 --> 00:00:09,399
+This is a short tour of the idea, the task, what worked, and what did not.
+
+4
+00:00:10,400 --> 00:00:15,105
+Agent frameworks get subagents by calling a model over and over from the outside.
+
+5
+00:00:15,105 --> 00:00:17,777
+Here the workers live inside one forward pass.
+
+6
+00:00:17,777 --> 00:00:23,296
+Each owns a private recurrent state, a learned router decides which worker sees each token, and
+
+7
+00:00:23,296 --> 00:00:25,503
+no prompts or tool calls are involved.
+
+8
+00:00:25,503 --> 00:00:30,092
+The question is whether routing to private slots actually helps state tracking.
+
+9
+00:00:31,090 --> 00:00:35,913
+At layer twelve of a frozen Qwen three, the residual stream feeds a router and K slot states
+
+10
+00:00:35,913 --> 00:00:36,805
+each a small GRU.
+
+11
+00:00:36,805 --> 00:00:41,576
+A return network decodes the slots and adds the result back into the residual stream before
+
+12
+00:00:41,576 --> 00:00:43,254
+layers thirteen to twenty seven.
+
+13
+00:00:43,254 --> 00:00:44,774
+Only the workers are trained.
+
+14
+00:00:45,770 --> 00:00:48,194
+The task is interleaved register programs.
+
+15
+00:00:48,194 --> 00:00:53,678
+Each register has its own stream of arithmetic operations, all shuffled together, and the model
+
+16
+00:00:53,678 --> 00:00:55,929
+must report one register's final value.
+
+17
+00:00:55,929 --> 00:00:57,141
+Chance is 10 percent.
+
+18
+00:00:57,141 --> 00:01:00,489
+We train on two or three registers and test up to sixteen.
+
+19
+00:01:01,490 --> 00:01:03,776
+Frozen Qwen alone sits at chance.
+
+20
+00:01:03,776 --> 00:01:09,871
+With workers attached, accuracy at two registers is about 61.5 percent for the stateless
+
+21
+00:01:09,871 --> 00:01:14,789
+adapter, 58.8 for a single shared state, and 55.4 for the routed slots.
+
+22
+00:01:14,789 --> 00:01:19,430
+By sixteen registers they all fall to roughly 25.6 to 28.4 percent.
+
+23
+00:01:19,430 --> 00:01:22,755
+Five seeds per cell, with random register names.
+
+24
+00:01:23,760 --> 00:01:29,914
+Averaged over two to sixteen registers, the stateless adapter reaches 45.8 percent, the routed
+
+25
+00:01:29,914 --> 00:01:32,925
+slots 41.0, and a parameter matched LoRA 39.4.
+
+26
+00:01:32,925 --> 00:01:36,329
+The private slots do not beat the simpler baselines.
+
+27
+00:01:37,330 --> 00:01:39,766
+The workers are doing real work, though.
+
+28
+00:01:39,766 --> 00:01:45,187
+If the return channel is zeroed at test time, every mode drops back to about 12.9 percent
+
+29
+00:01:45,187 --> 00:01:46,162
+which is chance.
+
+30
+00:01:46,162 --> 00:01:48,964
+The answer flows through the injected modules.
+
+31
+00:01:49,960 --> 00:01:55,586
+The learned router really does bind registers to slots, with about 88 percent purity on
+
+32
+00:01:55,586 --> 00:01:58,367
+average, but one seed sits near fifty four.
+
+33
+00:01:58,367 --> 00:02:01,600
+Clean routing does not turn into an accuracy edge.
+
+34
+00:02:02,600 --> 00:02:04,051
+Scale helps a lot.
+
+35
+00:02:04,051 --> 00:02:11,307
+At sixteen registers on Qwen three four B, the adapter reaches 56.3 percent and the single
+
+36
+00:02:11,307 --> 00:02:15,741
+state 46.5, while the routed slots fall behind at 30.2.
+
+37
+00:02:16,740 --> 00:02:17,191
+Caveats.
+
+38
+00:02:17,191 --> 00:02:20,688
+One task family at toy scale, with two to five seeds per cell.
+
+39
+00:02:20,688 --> 00:02:22,605
+No best tuned LoRA claim was made.
+
+40
+00:02:22,605 --> 00:02:26,383
+Every mode collapses when each register gets long operation chains.
+
+41
+00:02:26,383 --> 00:02:30,556
+And the main claim, that private slots help, is not supported by the data.
+
+42
+00:02:31,560 --> 00:02:34,552
+Code, results and logs are in the repo.
+

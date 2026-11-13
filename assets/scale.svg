@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 460" width="980" height="460" role="img" aria-label="Scale: accuracy at P=16 (%)">
+<rect width="980" height="460" rx="16" fill="#0b0f17"/>
+<text x="32" y="44" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-weight="700" font-size="22" fill="#e6edf6">Scale: accuracy at P=16 (%)</text>
+<text x="32" y="68" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="14" fill="#8a98ad">same recipe on frozen Qwen3-0.6B / 1.7B / 4B</text>
+<line x1="70" x2="950" y1="372" y2="372" stroke="#263044"/><text x="60" y="376" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">0</text>
+<line x1="70" x2="950" y1="304" y2="304" stroke="#263044"/><text x="60" y="308" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">25</text>
+<line x1="70" x2="950" y1="236" y2="236" stroke="#263044"/><text x="60" y="240" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">50</text>
+<line x1="70" x2="950" y1="168" y2="168" stroke="#263044"/><text x="60" y="172" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">75</text>
+<line x1="70" x2="950" y1="100" y2="100" stroke="#263044"/><text x="60" y="104" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">1e+02</text>
+<rect x="165.7" y="300.8" width="31.0" height="71.2" rx="4" fill="#27c8e8"/>
+<text x="181.2" y="294.8" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">26</text>
+<rect x="199.7" y="304.9" width="31.0" height="67.1" rx="4" fill="#ff6b6b"/>
+<text x="215.2" y="298.9" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">25</text>
+<rect x="233.7" y="304.0" width="31.0" height="68.0" rx="4" fill="#f2c14e"/>
+<text x="249.2" y="298.0" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">25</text>
+<text x="217" y="394" text-anchor="middle" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" fill="#e6edf6">Qwen3-0.6B</text>
+<rect x="459.0" y="293.1" width="31.0" height="78.9" rx="4" fill="#27c8e8"/>
+<text x="474.5" y="287.1" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">29</text>
+<rect x="493.0" y="274.1" width="31.0" height="97.9" rx="4" fill="#ff6b6b"/>
+<text x="508.5" y="268.1" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">36</text>
+<rect x="527.0" y="299.2" width="31.0" height="72.8" rx="4" fill="#f2c14e"/>
+<text x="542.5" y="293.2" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">27</text>
+<text x="510" y="394" text-anchor="middle" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" fill="#e6edf6">Qwen3-1.7B</text>
+<rect x="752.3" y="218.8" width="31.0" height="153.2" rx="4" fill="#27c8e8"/>
+<text x="767.8" y="212.8" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">56</text>
+<rect x="786.3" y="245.5" width="31.0" height="126.5" rx="4" fill="#ff6b6b"/>
+<text x="801.8" y="239.5" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">46</text>
+<rect x="820.3" y="289.9" width="31.0" height="82.1" rx="4" fill="#f2c14e"/>
+<text x="835.8" y="283.9" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#e6edf6">30</text>
+<text x="803" y="394" text-anchor="middle" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" fill="#e6edf6">Qwen3-4B</text>
+<rect x="70" y="416" width="14" height="14" rx="3" fill="#27c8e8"/><text x="90" y="428" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#8a98ad">adapter</text>
+<rect x="166.5" y="416" width="14" height="14" rx="3" fill="#ff6b6b"/><text x="186.5" y="428" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#8a98ad">single</text>
+<rect x="255.5" y="416" width="14" height="14" rx="3" fill="#f2c14e"/><text x="275.5" y="428" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#8a98ad">multi</text>
+<text x="948" y="446" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">source: results/derived/readme_data.json · higher is better</text>
+</svg>

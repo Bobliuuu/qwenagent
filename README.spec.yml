@@ -1,0 +1,304 @@
+# Spec for ~/video-readme-maker:  python3 ~/video-readme-maker/vrm.py all README.spec.yml
+# Numbers come from results/*.json via tools/readme_data.py (results/derived/readme_data.json).
+project:
+  name: qwenagent
+  emoji: "🧠"
+  tagline: "Subagent-like stateful workers inside a frozen Qwen3 forward pass: what works, and what does not"
+  repo: Bobliuuu/qwenagent
+hero:
+  title: qwenagent
+  subtitle: "stateful workers + a learned router, embedded in a frozen Qwen3"
+  chips: [frozen Qwen3, GRU slot states, learned router, honest null result]
+theme: {accent: "#27c8e8", accent2: "#ff6b6b", accent3: "#f2c14e", good: "#3ddc97"}
+readme_out: README.md
+assets_dir: assets
+badges:
+  - {label: base model, message: "Qwen3-0.6B / 1.7B / 4B (frozen)", color: 27c8e8}
+  - {label: trainable, message: "441k worker params", color: 3ddc97}
+  - {label: seeds, message: "5 per cell (q9)", color: f2c14e}
+  - {label: workers vs adapter, message: "no gain", color: ff6b6b}
+  - {label: python, message: "3.10+", color: 3776ab, logo: python}
+nav:
+  - {emoji: "🎬", label: Video, anchor: video}
+  - {emoji: "📊", label: Results, anchor: results}
+  - {emoji: "🧩", label: How it works, anchor: how-it-works}
+  - {emoji: "🔬", label: Follow-ups, anchor: follow-ups}
+  - {emoji: "⚠️", label: Limitations, anchor: caveats}
+  - {emoji: "🔁", label: Reproduce, anchor: reproduce}
+  - {emoji: "🗺️", label: Repo map, anchor: repo-map}
+
+numbers:
+  chance: {file: results/derived/readme_data.json, path: chance, unit: "%"}
+  frozen: {file: results/derived/readme_data.json, path: frozen_mean_P2, fmt: "{:.1f}", unit: "%"}
+  ad_p2: {file: results/derived/readme_data.json, path: flat.acc_adapter_P2, fmt: "{:.1f}", unit: "%"}
+  si_p2: {file: results/derived/readme_data.json, path: flat.acc_single_P2, fmt: "{:.1f}", unit: "%"}
+  mu_p2: {file: results/derived/readme_data.json, path: flat.acc_multi_P2, fmt: "{:.1f}", unit: "%"}
+  ad_p16: {file: results/derived/readme_data.json, path: flat.acc_adapter_P16, fmt: "{:.1f}", unit: "%"}
+  si_p16: {file: results/derived/readme_data.json, path: flat.acc_single_P16, fmt: "{:.1f}", unit: "%"}
+  mu_p16: {file: results/derived/readme_data.json, path: flat.acc_multi_P16, fmt: "{:.1f}", unit: "%"}
+  zero_mu: {file: results/derived/readme_data.json, path: flat.zero_multi, fmt: "{:.1f}", unit: "%"}
+  zero_ad: {file: results/derived/readme_data.json, path: flat.zero_adapter, fmt: "{:.1f}", unit: "%"}
+  pur4: {file: results/derived/readme_data.json, path: purity_P4_mean, fmt: "{:.0f}", unit: "%"}
+  mean_ad: {file: results/derived/readme_data.json, path: flat.mean_adapter, fmt: "{:.1f}", unit: "%"}
+  mean_mu: {file: results/derived/readme_data.json, path: flat.mean_multi, fmt: "{:.1f}", unit: "%"}
+  mean_lora: {file: results/derived/readme_data.json, path: lora_post_mean, fmt: "{:.1f}", unit: "%"}
+  s4_ad: {file: results/derived/readme_data.json, path: flat.scale_4B_adapter_P16, fmt: "{:.1f}", unit: "%"}
+  s4_si: {file: results/derived/readme_data.json, path: flat.scale_4B_single_P16, fmt: "{:.1f}", unit: "%"}
+  s4_mu: {file: results/derived/readme_data.json, path: flat.scale_4B_multi_P16, fmt: "{:.1f}", unit: "%"}
+  ad_4b_p4: {file: results/derived/readme_data.json, path: flat.scale_4B_adapter_P4, fmt: "{:.0f}", unit: "%"}
+  ad_06_p4: {file: results/derived/readme_data.json, path: flat.scale_06B_adapter_P4, fmt: "{:.0f}", unit: "%"}
+  nfiles: {file: results/derived/readme_data.json, path: n_result_files}
+
+intro: |
+  <a id="video"></a>
+  Agent frameworks get "subagents" by calling a model again and again from the outside. Here the subagent-like modules live **inside one forward pass**:
+  at the output of layer 12 of a frozen Qwen3-0.6B, K small neural workers each own a private recurrent (GRU) state, a learned router decides per token
+  which worker absorbs it, and the workers' states are decoded and **added back into the residual stream before layers 13-27**. Only the workers are trained.
+
+  The test is **interleaved register programs**: P registers each get a private stream of arithmetic ops (mod 10), shuffled into one token stream, and the model reports one register's final value.
+  Training uses 2-3 registers; testing goes to 16. Chance is {{ n.chance }}.
+
+  > **Headline.** Embedding trainable stateful modules in a frozen LM works (frozen Qwen is at {{ n.frozen }}; zeroing the return channel sends every mode back to chance),
+  > but **private slots are not a win**: a stateless adapter and a single shared state do as well or better, and the slot version is less stable across seeds.
+
+video:
+  url: ""
+  caption: "Explainer video (voice-over and subtitles): the idea, the task, the results, and the honest null result"
+  mp4: video/qwenagent_explainer.mp4
+  gif: video/preview.gif
+  srt: video/qwenagent_explainer.srt
+  poster: video/poster.png
+  out_dir: video/.render
+  fps: 24
+  max_mb: 22
+  render_crf: 18
+  poster_at: 40
+  music: true
+  voice: {engine: openai, voice: alloy, model: gpt-4o-mini-tts, tempo: 1.2}
+  scenes:
+    - type: title
+      title: qwenagent
+      subtitle: "Subagents inside a frozen Qwen forward pass"
+      chips: [frozen Qwen3, stateful workers, learned router]
+      say: "qwenagent. Can subagent like modules live inside a single forward pass of a frozen Qwen? This is a short tour of the idea, the task, what worked, and what did not."
+    - type: problem
+      heading: "The question"
+      bullets:
+        - "Agent frameworks call a model again and again from outside"
+        - "Here the workers live inside one forward pass"
+        - "Private state per worker, a learned router, no prompts"
+        - "Does routing to private slots help state tracking?"
+      say: "Agent frameworks get subagents by calling a model over and over from the outside. Here the workers live inside one forward pass. Each owns a private recurrent state, a learned router decides which worker sees each token, and no prompts or tool calls are involved. The question is whether routing to private slots actually helps state tracking."
+    - type: architecture
+      diagram: arch
+      heading: "Workers tapped into layer 12"
+      say: "At layer twelve of a frozen Qwen three, the residual stream feeds a router and K slot states, each a small GRU. A return network decodes the slots and adds the result back into the residual stream before layers thirteen to twenty seven. Only the workers are trained."
+    - type: idea
+      heading: "The task: interleaved register programs"
+      bullets:
+        - "P registers, each with its own stream of ops mod 10"
+        - "All streams shuffled into one token stream"
+        - "Query one register: chance is {{ n.chance.text }}"
+        - "Train on 2-3 registers, test on 2 to 16"
+      say: "The task is interleaved register programs. Each register has its own stream of arithmetic operations, all shuffled together, and the model must report one register's final value. Chance is {{ n.chance.numtext }} percent. We train on two or three registers and test up to sixteen."
+    - type: chart
+      chart: curve
+      say: "Frozen Qwen alone sits at chance. With workers attached, accuracy at two registers is about {{ n.ad_p2.numtext }} percent for the stateless adapter, {{ n.si_p2.numtext }} for a single shared state, and {{ n.mu_p2.numtext }} for the routed slots. By sixteen registers they all fall to roughly {{ n.mu_p16.numtext }} to {{ n.ad_p16.numtext }} percent. Five seeds per cell, with random register names."
+    - type: results
+      heading: "Do the slots matter? Mean accuracy over P = 2 to 16"
+      items:
+        - {label: "stateless adapter", number: mean_ad}
+        - {label: "learned-router slots (multi)", number: mean_mu}
+        - {label: "parameter-matched LoRA", number: mean_lora}
+      say: "Averaged over two to sixteen registers, the stateless adapter reaches {{ n.mean_ad.numtext }} percent, the routed slots {{ n.mean_mu.numtext }}, and a parameter matched LoRA {{ n.mean_lora.numtext }}. The private slots do not beat the simpler baselines."
+    - type: chart
+      chart: zero
+      say: "The workers are doing real work, though. If the return channel is zeroed at test time, every mode drops back to about {{ n.zero_mu.numtext }} percent, which is chance. The answer flows through the injected modules."
+    - type: stat
+      number: pur4
+      kicker: "router purity at P = 4, mean over 5 seeds"
+      label: "of tokens routed to the right slot"
+      sub: "yet that does not turn into an accuracy advantage"
+      say: "The learned router really does bind registers to slots, with about {{ n.pur4.numtext }} percent purity on average, but one seed sits near fifty four. Clean routing does not turn into an accuracy edge."
+    - type: chart
+      chart: scale
+      say: "Scale helps a lot. At sixteen registers on Qwen three four B, the adapter reaches {{ n.s4_ad.numtext }} percent and the single state {{ n.s4_si.numtext }}, while the routed slots fall behind at {{ n.s4_mu.numtext }}."
+    - type: caveats
+      heading: "Honest caveats"
+      bullets:
+        - "One task family, toy scale; 2 to 5 seeds per cell"
+        - "No tuned-LoRA claim: no learning rate sweep"
+        - "Long op chains per register: every mode collapses"
+        - "Private slots are NOT shown to help"
+      say: "Caveats. One task family at toy scale, with two to five seeds per cell. No best tuned LoRA claim was made. Every mode collapses when each register gets long operation chains. And the main claim, that private slots help, is not supported by the data."
+    - type: end
+      title: qwenagent
+      subtitle: "Code, results and logs are in the repo"
+      say: "Code, results and logs are in the repo."
+
+tables:
+  - id: q9_tbl
+    title: "Accuracy (%) by number of registers, mean ± std over 5 seeds (random register names, K=4, layer 12)"
+    file: results/derived/readme_data.json
+    rows_path: q9_table
+    highlight: multi
+    columns:
+      - {key: mode, title: mode}
+      - {key: n, title: seeds, align: right}
+      - {key: P2, title: P=2, align: right}
+      - {key: P3, title: P=3, align: right}
+      - {key: P4, title: P=4, align: right}
+      - {key: P6, title: P=6, align: right}
+      - {key: P8, title: P=8, align: right}
+      - {key: P12, title: P=12, align: right}
+      - {key: P16, title: P=16, align: right}
+  - id: scale_tbl
+    title: "Model scale (injection at about 43% depth): accuracy % at P=4 and P=16"
+    file: results/derived/readme_data.json
+    rows_path: scale_rows
+    columns:
+      - {key: model, title: base model}
+      - {key: mode, title: mode}
+      - {key: n, title: seeds, align: right}
+      - {key: P4, title: P=4, align: right, fmt: "{:.1f}"}
+      - {key: P16, title: P=16, align: right, fmt: "{:.1f}"}
+
+charts:
+  - id: curve
+    type: line
+    title: "Accuracy vs number of registers (chance = 10%)"
+    subtitle: "trained on 2-3 registers; mean of 5 seeds per point; random register names"
+    file: results/derived/readme_data.json
+    rows_path: q9_curve
+    x: P
+    y: acc
+    series: mode
+    xlabel: "registers P"
+    ylabel: "accuracy (%)"
+  - id: zero
+    type: gbar
+    title: "Zeroing the return channel at test time (P=4, accuracy %)"
+    subtitle: "intact vs zeroed; chance is 10%"
+    better: higher
+    file: results/derived/readme_data.json
+    rows_path: zero_rows
+    cat: mode
+    series: kind
+    y: acc
+    fmt: "{:.0f}"
+  - id: scale
+    type: gbar
+    title: "Scale: accuracy at P=16 (%)"
+    subtitle: "same recipe on frozen Qwen3-0.6B / 1.7B / 4B"
+    better: higher
+    file: results/derived/readme_data.json
+    rows_path: scale_p16
+    cat: model
+    series: mode
+    y: acc
+    fmt: "{:.0f}"
+
+diagrams:
+  - id: arch
+    title: "Workers inside a frozen Qwen3 forward pass (only the workers are trained)"
+    nodes:
+      - {id: tok, label: "tokens", sub: "interleaved register program", col: 0, row: 0, kind: io}
+      - {id: low, label: "frozen layers 0-12", sub: "Qwen3 weights never change", col: 1, row: 0}
+      - {id: rt, label: "router", sub: "token query vs slot keys", col: 2, row: 1, kind: accent}
+      - {id: sl, label: "K slot states", sub: "private GRU, persist across tokens", col: 3, row: 1, kind: accent}
+      - {id: add, label: "add to residual", sub: "return MLP summed over slots", col: 2, row: 0, kind: store}
+      - {id: up, label: "frozen layers 13-27", sub: "read it like any activation", col: 3, row: 0}
+      - {id: out, label: "digit logits 0-9", sub: "answer = argmax", col: 4, row: 0, kind: io}
+    edges:
+      - {from: tok, to: low}
+      - {from: low, to: add}
+      - {from: low, to: rt, label: "hook at layer 12"}
+      - {from: rt, to: sl}
+      - {from: sl, to: add, label: "return"}
+      - {from: add, to: up}
+      - {from: up, to: out}
+
+sections:
+  - title: Results
+    emoji: "📊"
+    id: results
+    body: "Query task, trained on P in {2,3}, 8000 steps, K=4 slots, injection at layer 12, random register names (q9 recipe, 5 seeds). All numbers are computed from `results/*.json` by `tools/readme_data.py`."
+    charts: [curve, zero]
+    tables: [q9_tbl]
+    after: |
+      Frozen Qwen3-0.6B with no workers sits at chance ({{ n.frozen }} at P=2). Zeroing the return channel at P=4 returns every trained mode to about {{ n.zero_mu }}: the answers flow through the injected modules.
+      The learned router reaches high purity against the true register ids (mean {{ n.pur4 }} at P=4), without an accuracy gain. Mean accuracy over P=2..16: adapter {{ n.mean_ad }}, multi {{ n.mean_mu }}, parameter-matched LoRA {{ n.mean_lora }}.
+      The complete ablation ladder, probes, per-seed tables and run timeline are kept in [docs/RESEARCH_LEDGER.md](docs/RESEARCH_LEDGER.md).
+  - title: How it works
+    emoji: "🧩"
+    id: how-it-works
+    body: |
+      Everything lives in [`worker.py`](worker.py); the hook is installed by [`train.py`](train.py).
+
+      - **Module.** A forward hook on `lm.model.layers[12]` passes hidden states through the workers and adds the result to the residual stream. All Qwen parameters are frozen.
+      - **Slot states.** K slots, each a `d_s`-wide GRU state with shared weights. A token is written into a slot with a gate (router weight times a learned write gate).
+      - **Router.** The token query is matched against each slot's state with a sharpened softmax. Slot identity is a random per-sequence initial state, so K can change at test time.
+      - **Return channel.** `phi(LayerNorm(state_k))`, summed (or mean over occupied slots with `--ret_norm`), added at layer 12 before layers 13-27; the last linear is zero-initialised so training starts from the frozen model.
+      - **Readout.** Argmax over the ten digit tokens at the final position; cross-entropy on those ten.
+
+      The task generator is [`task.py`](task.py), e.g. `a=6 b=0 c=1 c+6 c+9 a+2 b-2 | a? =`.
+    diagrams: [arch]
+    images:
+      - {src: figures/gif_q6_multi_vs_oracle_P3.gif, alt: "router weight per token: learned router versus oracle on one P=3 program (seed-0 checkpoint)", width: "85%"}
+    after: |
+      The animation shows one seed-0 checkpoint of the fixed-name run: router weight per token, one slot per row, learned router on top and the oracle (handed the true register ids) below.
+    details:
+      - summary: "The ablation ladder"
+        body: |
+          | mode | what it is |
+          |---|---|
+          | `none` | frozen Qwen, no workers |
+          | `adapter` | stateless per-token MLP at layer 12, parameter-matched |
+          | `single` | ONE persistent state, parameter-matched |
+          | `uniform` | K private states, every token updates every slot, no routing |
+          | `multi` | K private states, learned router (the "subagent" claim) |
+          | `oracle` | K private states, router replaced by the true register ids |
+  - title: Follow-ups
+    emoji: "🔬"
+    id: follow-ups
+    body: "Checks of whether the private-slot result is an artefact (tables in `results/q10_notes.md` to `results/q13_notes.md`)."
+    charts: [scale]
+    tables: [scale_tbl]
+    after: |
+      - **Parameter-matched LoRA (5 seeds):** LoRA after the injection layer {{ n.mean_lora }} mean accuracy, against adapter {{ n.mean_ad }} and multi {{ n.mean_mu }}. No best-tuned-LoRA claim is made.
+      - **Capacity (q11, up to 64 registers):** a single recurrent state is not capacity-starved, and `multi` does not beat equal-width `single`.
+      - **Realistic ledger task (q12):** frozen Qwen at chance, every trained mode at least 0.88 at P=2-3; no slot advantage at P=12.
+      - **Depth and scale (q13):** layers 4 and 12 work, 18 degrades, 24 is near chance; adapter at P=4 goes from {{ n.ad_06_p4 }} (0.6B) to {{ n.ad_4b_p4 }} (4B), and `multi` falls further behind at 4B.
+  - title: Reproduce
+    emoji: "🔁"
+    id: reproduce
+    body: |
+      Training needs a CUDA GPU with `torch` and `transformers`; the visualisation side needs only `numpy`, `matplotlib`, `pillow`.
+
+      ```bash
+      ./run_q9.sh multi 0        # or any mode: none|adapter|single|uniform|multi|oracle; seed 0..4
+      python tools/readme_data.py                              # results/*.json -> results/derived/readme_data.json
+      python3 ~/video-readme-maker/vrm.py all README.spec.yml  # README.md, assets/, video/
+      ./viz/build_all.sh         # figures, GIFs and the docs/RESEARCH_LEDGER.md tables
+      ```
+      Launchers `run_q*.sh`; Modal apps `modal_*.py`.
+
+caveats:
+  - "**One task family, toy scale.** Interleaved register programs and a ledger variant; 2-5 seeds per cell; accuracy on 200 programs per size."
+  - "**Private slots are not shown to help.** With 5 seeds the nominal edge seen at 2 seeds disappeared; the slot version is also the least stable across seeds."
+  - "**No tuned-LoRA claim.** LoRA on layers 0-12 stayed at chance with the workers' untuned recipe; no learning-rate sweep was run."
+  - "**Long operation chains per register** collapse every mode to chance; that, not register count, is the unsolved wall."
+  - "**1.7B has 2 seeds per mode, 4B `none` has 1 seed.** Single runs on shared GPUs; no confidence intervals beyond seed std."
+
+repo_map:
+  - {path: worker.py, desc: "workers module: router, slot GRU states, occupancy gating, routed read, param matching"}
+  - {path: task.py, desc: "interleaved register-program generator"}
+  - {path: train.py, desc: "training, evaluation, intervention ablations, trace export"}
+  - {path: eval_ckpt.py, desc: "probes on saved checkpoints"}
+  - {path: results/, desc: "one JSON per run plus notes; results/derived is produced by tools/readme_data.py"}
+  - {path: docs/RESEARCH_LEDGER.md, desc: "full tables, probes and run timeline (previous README)"}
+  - {path: tools/readme_data.py, desc: "derives README and video numbers from results/"}
+  - {path: figures/, desc: "PNG figures and router GIFs"}
+  - {path: README.spec.yml, desc: "spec for video-readme-maker (README, charts, video)"}
+  - {path: video/, desc: "explainer mp4, srt, poster, preview gif (generated)"}
+footer: "Generated with video-readme-maker from README.spec.yml and results/."

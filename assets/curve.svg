@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 460" width="980" height="460" role="img" aria-label="Accuracy vs number of registers (chance = 10%)">
+<rect width="980" height="460" rx="16" fill="#0b0f17"/>
+<text x="32" y="44" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-weight="700" font-size="22" fill="#e6edf6">Accuracy vs number of registers (chance = 10%)</text>
+<text x="32" y="68" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="14" fill="#8a98ad">trained on 2-3 registers; mean of 5 seeds per point; random register names</text>
+<line x1="80" x2="940" y1="380" y2="380" stroke="#263044" stroke-width="1"/>
+<text x="70" y="384" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">0</text>
+<text x="80" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">2</text>
+<line x1="80" x2="940" y1="309" y2="309" stroke="#263044" stroke-width="1"/>
+<text x="70" y="313" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">16.14</text>
+<text x="295" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">5.5</text>
+<line x1="80" x2="940" y1="238" y2="238" stroke="#263044" stroke-width="1"/>
+<text x="70" y="242" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">32.29</text>
+<text x="510" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">9</text>
+<line x1="80" x2="940" y1="167" y2="167" stroke="#263044" stroke-width="1"/>
+<text x="70" y="171" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">48.43</text>
+<text x="725" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">12.5</text>
+<line x1="80" x2="940" y1="96" y2="96" stroke="#263044" stroke-width="1"/>
+<text x="70" y="100" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">64.58</text>
+<text x="940" y="400" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">16</text>
+<text x="510.0" y="424" text-anchor="middle" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#8a98ad">registers P</text>
+<text x="14" y="238.0" transform="rotate(-90 14 238.0)" text-anchor="middle" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#8a98ad">accuracy (%)</text>
+<polyline points="80.0,109.5 141.4,124.9 202.9,142.1 325.7,172.0 448.6,207.2 694.3,240.1 940.0,255.1" fill="none" stroke="#27c8e8" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="243" text-anchor="end" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#27c8e8">adapter</text>
+<polyline points="80.0,121.4 141.4,124.9 202.9,153.9 325.7,185.2 448.6,209.8 694.3,222.1 940.0,259.9" fill="none" stroke="#ff6b6b" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="248" text-anchor="end" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#ff6b6b">single</text>
+<polyline points="80.0,120.5 141.4,120.5 202.9,164.1 325.7,185.6 448.6,223.9 694.3,234.0 940.0,269.2" fill="none" stroke="#f2c14e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="257" text-anchor="end" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#f2c14e">uniform</text>
+<polyline points="80.0,136.4 141.4,153.1 202.9,163.6 325.7,207.6 448.6,227.0 694.3,242.8 940.0,267.4" fill="none" stroke="#3ddc97" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="255" text-anchor="end" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#3ddc97">multi</text>
+<polyline points="80.0,115.7 141.4,142.1 202.9,158.8 325.7,215.5 448.6,230.0 694.3,264.3 940.0,293.8" fill="none" stroke="#27c8e8" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="282" text-anchor="end" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="700" fill="#27c8e8">oracle</text>
+<text x="948" y="446" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" fill="#8a98ad">source: results/derived/readme_data.json · higher is better</text>
+</svg>
