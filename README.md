@@ -6,7 +6,7 @@
 
 **Subagent-like stateful workers inside a frozen Qwen3 forward pass: what works, and what does not**
 
-![base model: Qwen3-0.6B / 1.7B / 4B (frozen)](https://img.shields.io/badge/base%20model-Qwen3--0.6B%20%2F%201.7B%20%2F%204B%20%28frozen%29-27c8e8) ![trainable: 441k worker params](https://img.shields.io/badge/trainable-441k%20worker%20params-3ddc97) ![seeds: 5 per cell (q9)](https://img.shields.io/badge/seeds-5%20per%20cell%20%28q9%29-f2c14e) ![workers vs adapter: no gain](https://img.shields.io/badge/workers%20vs%20adapter-no%20gain-ff6b6b) ![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?logo=python&logoColor=white)
+![base model: Qwen3-0.6B / 1.7B / 4B (frozen)](https://img.shields.io/badge/base%20model-Qwen3--0.6B%20%2F%201.7B%20%2F%204B%20%28frozen%29-27c8e8) ![trainable: 441k worker params](https://img.shields.io/badge/trainable-441k%20worker%20params-3ddc97) ![seeds: 5 per cell (q9)](https://img.shields.io/badge/seeds-5%20per%20cell%20%28q9%29-f2c14e) ![workers vs adapter: no gain](https://img.shields.io/badge/workers%20vs%20adapter-no%20gain-ff6b6b) [![release: v0.1.0](https://img.shields.io/badge/release-v0.1.0-27c8e8?logo=github&logoColor=white)](https://github.com/Bobliuuu/qwenagent/releases/tag/v0.1.0) [![Hugging Face: worker checkpoints](https://img.shields.io/badge/Hugging%20Face-worker%20checkpoints-ffd21e?logo=huggingface&logoColor=white)](https://huggingface.co/Bobliu/qwenagent-workers) ![python: 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab?logo=python&logoColor=white)
 
 [🎬 Video](#video) · [📊 Results](#results) · [🧩 How it works](#how-it-works) · [🔬 Follow-ups](#follow-ups) · [⚠️ Limitations](#caveats) · [🔁 Reproduce](#reproduce) · [🗺️ Repo map](#repo-map)
 

@@ -17,6 +17,8 @@ badges:
   - {label: trainable, message: "441k worker params", color: 3ddc97}
   - {label: seeds, message: "5 per cell (q9)", color: f2c14e}
   - {label: workers vs adapter, message: "no gain", color: ff6b6b}
+  - {label: release, message: v0.1.0, color: 27c8e8, logo: github, link: "https://github.com/Bobliuuu/qwenagent/releases/tag/v0.1.0"}
+  - {label: Hugging Face, message: "worker checkpoints", color: ffd21e, logo: huggingface, link: "https://huggingface.co/Bobliu/qwenagent-workers"}
   - {label: python, message: "3.10+", color: 3776ab, logo: python}
 nav:
   - {emoji: "🎬", label: Video, anchor: video}
